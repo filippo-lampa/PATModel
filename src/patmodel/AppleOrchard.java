@@ -7,6 +7,7 @@ import repast.simphony.context.space.continuous.ContinuousSpaceFactoryFinder;
 import repast.simphony.context.space.grid.GridFactory;
 import repast.simphony.context.space.grid.GridFactoryFinder;
 import repast.simphony.dataLoader.ContextBuilder;
+import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.RandomCartesianAdder;
@@ -28,11 +29,11 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 		ContinuousSpaceFactory spaceFactory = ContinuousSpaceFactoryFinder.createContinuousSpaceFactory(null);
 		this.space = spaceFactory.createContinuousSpace (" space ", context, new RandomCartesianAdder < Object >(),
-				new repast.simphony.space.continuous.InfiniteBorders<>(), 50, 50, 50);
+				new repast.simphony.space.continuous.InfiniteBorders<>(), 100, 100, 100);
 	
 		GridFactory gridFactory = GridFactoryFinder.createGridFactory(null);
  		this.grid = gridFactory.createGrid("grid", context, GridBuilderParameters.multiOccupancyND( 
- 				new SimpleGridAdder<Object>(), new InfiniteBorders<>(), 50, 50, 50));
+ 				new SimpleGridAdder<Object>(), new InfiniteBorders<>(), 100, 100, 100));
 
  		this.context = context;
  		
@@ -41,5 +42,23 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		
 		return context;
 	}
+	
+	public void rain(boolean state) {
+
+	}
+
+	public void wind(boolean state) {
+
+	}
+
+	public void sun(boolean state) {
+
+	}
+
+	@ScheduledMethod(start = 1, interval = 1)
+	private void update() {
+
+	}
+	
 		
 }
