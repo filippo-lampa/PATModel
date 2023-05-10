@@ -11,8 +11,8 @@ public class Tree {
 	private final int MAX_AGE = 70*365;
 	private final int MIN_AGE_PRODUCE_APPLE = 2*365;
 	
-	private final int MAX_FOLIAGE_DIAMETER = 5;
-	private final int MAX_HEIGHT = 5;
+	private final int MAX_FOLIAGE_DIAMETER = 4;
+	private final int MAX_HEIGHT = 3;
 	private final int MAX_APPLE_QUANTITY = 20;
 	
 	private double width = 0.0;
