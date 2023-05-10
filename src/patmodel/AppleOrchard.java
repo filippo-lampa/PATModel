@@ -18,9 +18,15 @@ import repast.simphony.space.grid.SimpleGridAdder;
 
 public class AppleOrchard extends DefaultContext<Object> implements ContextBuilder<Object>{
 
-	Context<Object> context;
-	Grid<Object> grid;
-	ContinuousSpace<Object> space;
+	private Context<Object> context;
+	private Grid<Object> grid;
+	private ContinuousSpace<Object> space;
+	
+	private boolean isRaining;
+	private boolean isSunny;
+	private boolean isWindy;
+	
+	private double nutrients;
 	
 	@Override
 	public Context<Object> build(Context<Object> context) {
@@ -39,12 +45,18 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
  		
  		Parameters p;
  	
+ 		this.isRaining = false;
+ 		this.isWindy = false;
+ 		this.isSunny = false;
 		
+ 		//minimal nutrients for a plant to survive at first time tick is equal to 0.1
+ 		this.nutrients = 1;
+ 		
 		return context;
 	}
 	
 	public void rain(boolean state) {
-
+		
 	}
 
 	public void wind(boolean state) {
@@ -56,9 +68,21 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	}
 
 	@ScheduledMethod(start = 1, interval = 1)
-	private void update() {
-
+	private void updateSoil() {
+		deltaNutrients();
 	}
+	
+	@ScheduledMethod(start = 1, interval = 1)
+	private void updateWeather() {
+	}
+
+	private void deltaNutrients() {
+		if(isRaining) {
+			
+		}
+			
+	}
+	
 	
 		
 }
