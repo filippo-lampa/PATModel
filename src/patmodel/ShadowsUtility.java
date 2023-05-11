@@ -12,7 +12,7 @@ import repast.simphony.space.continuous.NdPoint;
 
 public final class ShadowsUtility {
 
-	private UtilityClassExample() {
+	private ShadowsUtility() {
         throw new java.lang.UnsupportedOperationException("Utility class and cannot be instantiated");
     }
 	
