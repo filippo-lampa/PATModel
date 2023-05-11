@@ -2,13 +2,10 @@ package patmodel;
 
 import java.util.stream.Stream;
 
-import org.antlr.stringtemplate.test.TestStringTemplate.Tree;
-
 import java.util.List;
 import java.util.ArrayList;
 
 import repast.simphony.space.continuous.ContinuousSpace;
-import repast.simphony.space.continuous.NdPoint;
 
 public final class ShadowsUtility {
 
@@ -30,7 +27,7 @@ public final class ShadowsUtility {
 		//at the end there are the function needed for the areas, but
 		// i have to find a way to understand which circles are intersected with each other
 		
-		percentageCalculation(space, neighbours);
+		percentageCalculation(space, neighbours, tree);
 		
         return 1.0;
     }
@@ -49,7 +46,7 @@ public final class ShadowsUtility {
 	//TODO control 
 	private static List<Tree> filterNeighboursThatIntersect(ContinuousSpace<Object> space, List<Tree> neighbours, Tree tree) {
 		
-		List<Tree> intersect = new ArrayList();
+		List<Tree> intersect = new ArrayList<Tree>();
 		
 		for(Tree t : neighbours) {
 			if(space.getDistance(space.getLocation(t), space.getLocation(tree)) < tree.getWidth()/2 + t.getWidth()/2) {
@@ -66,7 +63,7 @@ public final class ShadowsUtility {
 	//TODO control
 	private static List<Tree> filterTallerNeighbours(List<Tree> neighbours, double treeHeight) {
 		
-		List<Tree> taller = new ArrayList();
+		List<Tree> taller = new ArrayList<Tree>();
 		
 		for(Tree t : neighbours) {
 			if(t.getHeight() > treeHeight) {
@@ -82,8 +79,8 @@ public final class ShadowsUtility {
 	
 	private static double percentageCalculation(ContinuousSpace<Object> space, List<Tree> neighbours, Tree tree) {
 		
-		List<List<Tree>> couples = new ArrayList();
-		List<Tree> alones = new ArrayList();
+		List<List<Tree>> couples = new ArrayList<List<Tree>>();
+		List<Tree> alones = new ArrayList<Tree>();
 		
 		List<Tree> app = new ArrayList<>();
 		app.addAll(neighbours);
@@ -164,7 +161,4 @@ public final class ShadowsUtility {
 
 	    return areaTri;
 	}
-	
-	
-	
 }
