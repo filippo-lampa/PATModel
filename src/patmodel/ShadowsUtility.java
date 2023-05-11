@@ -12,7 +12,7 @@ import repast.simphony.space.continuous.NdPoint;
 
 public final class ShadowsUtility {
 
-	private UtilityClassExample() {
+	private ShadowsUtility() {
         throw new java.lang.UnsupportedOperationException("Utility class and cannot be instantiated");
     }
 	
@@ -42,6 +42,7 @@ public final class ShadowsUtility {
 		return Stream.of(space.getObjects())
 				.filter(o -> o.getClass().equals(tree.getClass()) 
 						&& space.getDistance(space.getLocation(o), space.getLocation(tree)) < maxRange)
+				.map(o -> (Tree) o)
 				.toList();
 	}
 	
@@ -69,7 +70,7 @@ public final class ShadowsUtility {
 		
 		for(Tree t : neighbours) {
 			if(t.getHeight() > treeHeight) {
-				intersect.add(t);
+				taller.add(t);
 			}
 		}
 		return taller;
@@ -141,7 +142,7 @@ public final class ShadowsUtility {
 	
 	
 	public static double intersectionAreaTwoCircles(ContinuousSpace<Object> space, Tree tree1, Tree tree2) {
-	    double d = space.getDistance(space.getLocation(t), space.getLocation(tree));
+	    double d = space.getDistance(space.getLocation(tree1), space.getLocation(tree2));
 	    double r1 = tree1.getWidth()/2;
 	    double r2 = tree2.getWidth()/2;
 	    
