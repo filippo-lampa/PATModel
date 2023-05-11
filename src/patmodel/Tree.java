@@ -77,7 +77,8 @@ public class Tree {
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 3)
-	private void getNutrients() {
+	private void update() {
+		//Update method is called once per time tick
 		double toGrow = calcNutrientsToGrow();
 		double toSurvive = calcNutrientsToSurvive();
 		if(checkAgeTooOld()) {

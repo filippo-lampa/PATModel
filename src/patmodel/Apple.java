@@ -1,5 +1,7 @@
 package patmodel;
 
+import repast.simphony.engine.schedule.ScheduledMethod;
+
 public class Apple {
 
 	// cm
@@ -14,6 +16,11 @@ public class Apple {
 	public Apple(){
 		this.grow();
 		this.isFallen = false;
+	}
+	
+	@ScheduledMethod(start = 1, interval = 1, priority = 4)
+	private void update() {
+		//TODO update method called once per time tick
 	}
 	
 	public void becomeNutrients() {

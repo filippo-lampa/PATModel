@@ -67,12 +67,12 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	}
 
-	@ScheduledMethod(start = 1, interval = 1)
+	@ScheduledMethod(start = 1, interval = 1, priority = 2)
 	private void updateSoil() {
 		deltaNutrients();
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1)
+	@ScheduledMethod(start = 1, interval = 1, priority = 1)
 	private void updateWeather() {
 	}
 
