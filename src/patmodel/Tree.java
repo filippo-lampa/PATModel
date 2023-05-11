@@ -16,7 +16,7 @@ public class Tree {
 	private final int MAX_APPLE_QUANTITY = 20;
 	
 	private double width = 0.0;
-	private double height =0.0;
+	private double height = 0.0;
 	private double age = 0;
 	private int appleQuantity = 0;
 	private double diameter = 0.0;
@@ -79,7 +79,7 @@ public class Tree {
 		context.remove(this);
 	}
 	
-	@ScheduledMethod(start = 1, interval = 1)
+	@ScheduledMethod(start = 1, interval = 1, priority = 3)
 	private void getNutrients() {
 		double toGrow = calcNutrientsToGrow();
 		double toSurvive = calcNutrientsToSurvive();
@@ -111,5 +111,11 @@ public class Tree {
 		diameter =+ 0.02;
 	}
 	
-	
+	public double getWidth() {
+		return width;
+	}
+
+	public double getHeight() {
+		return height;
+	}
 }
