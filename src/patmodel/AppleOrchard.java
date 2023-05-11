@@ -17,6 +17,7 @@ import repast.simphony.space.grid.GridBuilderParameters;
 import repast.simphony.space.grid.InfiniteBorders;
 import repast.simphony.space.grid.SimpleGridAdder;
 
+
 public class AppleOrchard extends DefaultContext<Object> implements ContextBuilder<Object> {
 
 	private Context<Object> context;
@@ -91,25 +92,64 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		double rainDuration = currentTick - this.rainStartTimetick;
 		double windDuration = currentTick - this.windStartTimetick;
 		double sunDuration = currentTick - this.sunStartTimetick;
-		// TODO: aggiungere ogni volta 1 alla duration (forse)!
-		int actualMonth = (int) Math.floor((currentTick % 365) / 30);
-		//controllo random se dovrebbe piovere
-		if (rainDuration > ) {
-			
+		double weight_rain = computeRandomWeight(currentTick);
+		double weight_wind = computeRandomWeight(currentTick);
+		double weight_sun = computeRandomWeight(currentTick);
+		
+		// Randomness of the three probability combined
+		
+		// Actual condition based on probability combined ( what happens )
+		
+	}
+	
+	private double computeRandomWeight(double currentTick) {
+		double weight = 0;
+		Season season = computeSeason(currentTick);
+		
+		//Compute weight for an event
+		switch(season) {
+			case SPRING:
+				//high sun / mid wind / low rain
+				break;
+			case SUMMER:
+				//high sun / low wind / low rain
+				break;
+			case AUTUMN:
+				//high rain / high wind / low sun
+				break;
+			case WINTER:
+				//mid rain / mid wind / low sun 
+				break;
 		}
-		//controllo random se dovrebbe piovere
-		if () {
-			
-		}
-		//controllo random se dovrebbe piovere
-		if () {
-			
-		}
-
+		
+		return weight;
 	}
 
-	private double computeRandomWeight() {
-
+	private Season computeSeason(double currentTick) {
+		//Compute the month 
+		int month = (int) ((currentTick % 365) / 30);
+		
+		//Compute seasons
+		Season season;
+		
+		//Spring
+		if(month > 3 && month <= 5) {
+			season = Season.SPRING;
+		}
+		//Summer
+		else if (month > 5 && month <= 9 ) {
+			season = Season.SUMMER;
+		}
+		//Fall
+		else if (month > 9 && month <= 12) {
+			season = Season.AUTUMN;
+		}
+		//Winter
+		else{
+			season = Season.WINTER;
+		}
+		
+		return season;
 	}
 
 	private void deltaNutrients() {
