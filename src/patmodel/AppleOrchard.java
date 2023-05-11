@@ -51,8 +51,14 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		
  		//minimal nutrients for a plant to survive at first time tick is equal to 0.1
  		this.nutrients = 1;
- 		
+ 		initAgents();
 		return context;
+	}
+	
+	private void initAgents() {
+		Tree t = new Tree(space, grid, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_APPLE_QUANTITY, Tree.BASE_FOLIAGE_DIAMETER);
+		this.context.add(t);
+		this.space.moveTo(t, 0, 0, 0);
 	}
 	
 	public void rain(boolean state) {
