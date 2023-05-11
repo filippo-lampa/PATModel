@@ -1,6 +1,5 @@
 package patmodel;
 
-import repast.simphony.context.Context;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.grid.Grid;
@@ -23,18 +22,15 @@ public class Tree {
 	
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
-	private Soil soil;
 	
-	public Tree(ContinuousSpace<Object> space, Grid<Object> grid, Soil soil) {
+	public Tree(ContinuousSpace<Object> space, Grid<Object> grid) {
 		this.space = space;
 		this.grid = grid;
-		this.soil = soil;
 	}
 	
-	public Tree(ContinuousSpace<Object> space, Grid<Object> grid, Soil soil, double width, double height, double age, int appleQuantity, double diameter) {
+	public Tree(ContinuousSpace<Object> space, Grid<Object> grid, double width, double height, double age, int appleQuantity, double diameter) {
 		this.space = space;
 		this.grid = grid;
-		this.soil = soil;
 		this.width = width;
 		this.height = height;
 		this.age = age;
@@ -44,7 +40,8 @@ public class Tree {
 	
 	
 	private void absorbNutrients(double amount) {
-		soil.decreaseNutrients(amount);
+		//soil.decreaseNutrients(amount);
+		//TODO wait for communication implementation
 	}
 	
 	private double calcNutrientsToGrow() {
@@ -75,7 +72,7 @@ public class Tree {
 	}
 	
 	private void die() {
-		Context<Object> context = ContextUtils.getContext(this);
+		var context = ContextUtils.getContext(this);
 		context.remove(this);
 	}
 	
@@ -102,7 +99,9 @@ public class Tree {
 	}
 	
 	private double getSoilNutrientsQuantity() {
-		return soil.getNutrientsAmount();
+		//return soil.getNutrientsAmount();
+		//TODO wait for communication implementation
+		return 0;
 	}
 	
 	private void grow() {
