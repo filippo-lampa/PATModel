@@ -32,6 +32,9 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	// timeticks
 	private int rainStartTimetick;
 	private int windStartTimetick;
+
+	// TODO: add array weather history: max 30 days
+
 	private int sunStartTimetick;
 	private int rainEndTimetick;
 	private int windEndTimetick;
