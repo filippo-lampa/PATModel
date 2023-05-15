@@ -49,7 +49,6 @@ public class Tree {
 	
 	private double calcNutrientsToGrow() {
 		return width + height + diameter + (age/10) + (appleQuantity*0.2);
-		//TODO implement formula to calculate the correct value
 	}
 	
 	private boolean checkAgeTooOld() {
@@ -65,13 +64,15 @@ public class Tree {
 		}
 	
 	private double calcNutrientsToSurvive( ) {
-		//TODO implement formula to calculate the correct value
 		return (width + height + diameter + (age/10))/2;
 	}
 	
 	private void createApples() {
-		if(checkAgeTooYoung() && appleQuantity < MAX_APPLE_QUANTITY)
-			appleQuantity =+1;
+		if(checkAgeTooYoung()) {
+			appleQuantity += 1;
+			if(appleQuantity > MAX_APPLE_QUANTITY) // remove additional apples
+				releaseApples(appleQuantity - MAX_APPLE_QUANTITY);
+		}		
 	}
 	
 	private void die() {
@@ -95,7 +96,11 @@ public class Tree {
 		else if(getSoilNutrientsQuantity() >= toSurvive){
 			absorbNutrients(toSurvive);
 		}else {
-			die();
+			if(appleQuantity > 0) {
+				releaseApples(1);
+			} else {
+				die();
+			}
 			return;
 		}
 		age += 1;
@@ -106,9 +111,9 @@ public class Tree {
 	}
 	
 	private void grow() {
-		width =+ 0.0001;
-		height=+ 0.01;
-		diameter =+ 0.02;
+		width += 0.0001;
+		height += 0.01;
+		diameter += 0.02;
 	}
 	
 	public double getWidth() {
@@ -118,4 +123,13 @@ public class Tree {
 	public double getHeight() {
 		return height;
 	}
+	
+	public void releaseApples(int nApples) {
+		if(appleQuantity < nApples)
+			appleQuantity = 0.0;
+		else
+			appleQuantity -= nApples;
+	}
+	
+	
 }
