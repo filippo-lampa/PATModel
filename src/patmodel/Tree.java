@@ -1,7 +1,12 @@
 package patmodel;
 
+import java.util.ArrayList;
+
+import org.stringtemplate.v4.compiler.STParser.namedArg_return;
+
 import repast.simphony.context.Context;
 import repast.simphony.engine.schedule.ScheduledMethod;
+import repast.simphony.relogo.ide.dynamics.NetLogoSystemDynamicsParser.intg_return;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.grid.Grid;
 import repast.simphony.util.ContextUtils;
@@ -18,12 +23,12 @@ public class Tree {
 	private double width = 0.0;
 	private double height = 0.0;
 	private double age = 0;
-	private int appleQuantity = 0;
 	private double diameter = 0.0;
 	
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
 	private Soil soil;
+	private ArrayList<Apple> appleSet;
 	
 	public Tree(ContinuousSpace<Object> space, Grid<Object> grid, Soil soil) {
 		this.space = space;
@@ -31,14 +36,14 @@ public class Tree {
 		this.soil = soil;
 	}
 	
-	public Tree(ContinuousSpace<Object> space, Grid<Object> grid, Soil soil, double width, double height, double age, int appleQuantity, double diameter) {
+	public Tree(ContinuousSpace<Object> space, Grid<Object> grid, Soil soil, double width, double height, double age, ArrayList<Apples> apples, double diameter) {
 		this.space = space;
 		this.grid = grid;
 		this.soil = soil;
 		this.width = width;
 		this.height = height;
 		this.age = age;
-		this.appleQuantity = appleQuantity;
+		this.appleSet = apples;
 		this.diameter = diameter;
 	}
 	
@@ -61,7 +66,7 @@ public class Tree {
 	
 	private boolean checkAgeTooYoung() {
 		return age > MIN_AGE_PRODUCE_APPLE;
-		}
+	}
 	
 	private double calcNutrientsToSurvive( ) {
 		return (width + height + diameter + (age/10))/2;
@@ -69,9 +74,9 @@ public class Tree {
 	
 	private void createApples() {
 		if(checkAgeTooYoung()) {
-			appleQuantity += 1;
-			if(appleQuantity > MAX_APPLE_QUANTITY) // remove additional apples
-				releaseApples(appleQuantity - MAX_APPLE_QUANTITY);
+			Apple newApple = Apple();
+			if(appleSet.size() > MAX_APPLE_QUANTITY) // remove additional apples
+				releaseApples(appleSet.size() - MAX_APPLE_QUANTITY);
 		}		
 	}
 	
@@ -96,7 +101,7 @@ public class Tree {
 		else if(getSoilNutrientsQuantity() >= toSurvive){
 			absorbNutrients(toSurvive);
 		}else {
-			if(appleQuantity > 0) {
+			if(appleSet.size() > 0) {
 				releaseApples(1);
 			} else {
 				die();
@@ -125,10 +130,12 @@ public class Tree {
 	}
 	
 	public void releaseApples(int nApples) {
-		if(appleQuantity < nApples)
-			appleQuantity = 0.0;
-		else
-			appleQuantity -= nApples;
+		for(int i = 0; int < nApples; i++) {//release a random apple
+			int index = (int)(Math.random() * appleSet.size());
+			Apple toRemove = appleSet.get(index);
+			toRemove.fall();
+			appleSet.remove(toRemove);
+		}
 	}
 	
 	
