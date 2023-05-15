@@ -37,29 +37,26 @@ public class Apple {
 		this.context = context;
 		this.orchard = orchard;
 		this.space = space;
-		this.isFallen = false;
 		this.grow();
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 4)
 	private void update() {
-		this.grow();
+			this.grow();
+			if(this.diameter == 7)
+				this.fall();	
+	}
+	
+	public void fall() {
+		this.becomeTreeOrNutrients();
+		this.context.remove(this);
 	}
 	
 	private void grow() {
-		if(!this.isFallen) {
-			this.diameter += 0.1;
-			this.canFall();
-		}
+		this.diameter += 0.1;
 	}
+
 	
-	private void canFall(){
-		if(this.diameter == 7) {
-			this.isFallen = true;
-			this.becomeTreeOrNutrients();
-			
-		}
-	}
 
 	private void becomeTreeOrNutrients() {
 		if(new Random().nextBoolean()) 
