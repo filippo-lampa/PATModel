@@ -6,7 +6,11 @@ import repast.simphony.space.grid.Grid;
 import repast.simphony.util.ContextUtils;
 
 public class Tree {
-	
+	public static final double BASE_TREE_WIDHT = 1;
+	public static final double BASE_TREE_HEIGHT = 2;
+	public static final double BASE_TREE_AGE = 1;
+	public static final int BASE_APPLE_QUANTITY = 10;
+	public static final double BASE_FOLIAGE_DIAMETER = 2;
 	private final int MAX_AGE = 70*365;
 	private final int MIN_AGE_PRODUCE_APPLE = 2*365;
 	

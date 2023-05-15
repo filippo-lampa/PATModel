@@ -49,10 +49,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		this.space = spaceFactory.createContinuousSpace(" space ", context, new RandomCartesianAdder<Object>(),
 				new repast.simphony.space.continuous.InfiniteBorders<>(), 100, 100, 100);
 
-		GridFactory gridFactory = GridFactoryFinder.createGridFactory(null);
-		this.grid = gridFactory.createGrid("grid", context, GridBuilderParameters
-				.multiOccupancyND(new SimpleGridAdder<Object>(), new InfiniteBorders<>(), 100, 100, 100));
-
 		this.context = context;
 
 		Parameters p;
@@ -61,12 +57,18 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		this.isWindy = false;
 		this.isSunny = false;
 
-		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
+		//minimal nutrients for a plant to survive at first time tick is equal to 0.1
 		this.nutrients = 1;
-
+		initAgents();
 		return context;
 	}
-
+	
+	private void initAgents() {
+		Tree t = new Tree(space, grid, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_APPLE_QUANTITY, Tree.BASE_FOLIAGE_DIAMETER);
+		this.context.add(t);
+		this.space.moveTo(t, 0, 0, 0);
+	}
+	
 	public void rain(boolean state) {
 
 	}
