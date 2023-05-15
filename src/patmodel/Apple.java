@@ -4,6 +4,7 @@ import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.query.space.grid.GridCell;
 import repast.simphony.query.space.grid.GridCellNgh;
 import repast.simphony.space.continuous.ContinuousSpace;
+import repast.simphony.space.continuous.NdPoint;
 import repast.simphony.space.grid.Grid;
 import repast.simphony.space.grid.GridPoint;
 import repast.simphony.context.Context;
@@ -68,7 +69,7 @@ public class Apple {
 	}
 	
 	private void becomeNutrients() {
-		//this.orchard.addNutrients();
+		this.orchard.addNutrients();
 	}
 	
 	private void becomeTree() {
@@ -82,11 +83,10 @@ public class Apple {
 		}
 	}
 	
-	private GridPoint casualNearPoint(){
+	// this method must improved in the future
+	private NdPoint casualNearPoint(){
 		var gp = this.space.getLocation(this);
-		var nghCreator = new GridCellNgh<Object>(space, gp, Object.class, 1, 1);
-		var gridCells = nghCreator.getNeighborhood(false);
-		return gridCells.get(new Random().nextInt(gridCells.size())).getPoint();
+		return gp;
 	}
 
 	
