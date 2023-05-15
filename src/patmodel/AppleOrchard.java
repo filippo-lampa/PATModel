@@ -4,8 +4,6 @@ import repast.simphony.context.Context;
 import repast.simphony.context.DefaultContext;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactory;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactoryFinder;
-import repast.simphony.context.space.grid.GridFactory;
-import repast.simphony.context.space.grid.GridFactoryFinder;
 import repast.simphony.dataLoader.ContextBuilder;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
@@ -13,10 +11,6 @@ import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.RandomCartesianAdder;
 import repast.simphony.space.grid.Grid;
-import repast.simphony.space.grid.GridBuilderParameters;
-import repast.simphony.space.grid.InfiniteBorders;
-import repast.simphony.space.grid.SimpleGridAdder;
-
 
 public class AppleOrchard extends DefaultContext<Object> implements ContextBuilder<Object> {
 	private static final double MIN_DISTANCE_BETWEEN_TREES = 3;
@@ -66,13 +60,12 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	private void initAgents() {
 		//TODO init soil and get height
 		double soilHeight = 1;
-		for(int row = 0; row<this.space.getDimensions().getDepth()/MIN_DISTANCE_BETWEEN_TREES; ++row) {
-			for(int column = 0; column<this.space.getDimensions().getWidth()/MIN_DISTANCE_BETWEEN_TREES; ++column) {
+		for(int row = 1; row<this.space.getDimensions().getDepth()/MIN_DISTANCE_BETWEEN_TREES; ++row) {
+			for(int column = 1; column<this.space.getDimensions().getWidth()/MIN_DISTANCE_BETWEEN_TREES; ++column) {
 				Tree t = new Tree(space, grid, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_APPLE_QUANTITY, Tree.BASE_FOLIAGE_DIAMETER);
 				this.context.add(t);
-				this.space.moveTo(t, column * MIN_DISTANCE_BETWEEN_TREES, row * MIN_DISTANCE_BETWEEN_TREES, soilHeight);
+				this.space.moveTo(t, column * MIN_DISTANCE_BETWEEN_TREES, soilHeight, row * MIN_DISTANCE_BETWEEN_TREES);
 			}
-			
 		}
 	}
 	
@@ -136,36 +129,27 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	private Season computeSeason(double currentTick) {
 		//Compute the month 
-		int month = (int) ((currentTick % 365) / 30);
-		
-		//Compute seasons
-		Season season;
-		
-		//Spring
-		if(month > 3 && month <= 5) {
-			season = Season.SPRING;
+		int month = (int) ((currentTick % 366) / 30);
+		if (month == 0) {
+			//case day 1, aka time tick 0
+			month = 1;
 		}
-		//Summer
-		else if (month > 5 && month <= 9 ) {
-			season = Season.SUMMER;
+		if (month < 1 || month > 12) {
+			throw new IllegalArgumentException("time tick: " + currentTick + " generated invalid month: " + month);
 		}
-		//Fall
-		else if (month > 9 && month <= 12) {
-			season = Season.AUTUMN;
-		}
-		//Winter
-		else{
-			season = Season.WINTER;
-		}
-		
-		return season;
+		return switch(month) {
+			case 3, 4, 5 -> Season.SPRING;
+			case 6, 7, 8 -> Season.SUMMER;
+			case 9, 10, 11 -> Season.AUTUMN;
+			case 12, 1, 2 -> Season.WINTER;
+			default -> Season.WINTER;
+		};
 	}
 
 	private void deltaNutrients() {
 		if (isRaining) {
 
 		}
-
 	}
 
 }
