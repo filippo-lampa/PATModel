@@ -13,14 +13,12 @@ import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.RandomCartesianAdder;
-import repast.simphony.space.grid.Grid;
 
 public class AppleOrchard extends DefaultContext<Object> implements ContextBuilder<Object> {
 	private static final double MIN_DISTANCE_BETWEEN_TREES = 3; 
 	private static final double RAINING_NUTRIENTS_TRESHOLD = 0.5;
 	private static final double SUNNY_NUTRIENTS_TRESHOLD = -0.1;
 	private Context<Object> context;
-	private Grid<Object> grid;
 	private ContinuousSpace<Object> space;
 	
 	private boolean isRaining;
@@ -46,6 +44,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	
 	public static final int TREE_VISUALISATION_Y_OFFSET = 0; // required offset to keep trees stuck to the ground when scaling is at 1.0
 	public static final double STARTING_TREE_VISUALISATION_Y_OFFSET = 1.7; // required offset to keep trees stuck to the ground when scaling is at 1.0
+	public static final double APPLE_NUTRIENT_AMOUNT = 1.5;
 	
 	@Override
 	public Context<Object> build(Context<Object> context) {
@@ -79,7 +78,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		double soilHeight = 1;
 		for(int row = 1; row<this.space.getDimensions().getDepth()/MIN_DISTANCE_BETWEEN_TREES; row++) {
 			for(int column = 1; column<this.space.getDimensions().getWidth()/MIN_DISTANCE_BETWEEN_TREES; column++) {
-				Tree t = new Tree(space, grid, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_APPLE_QUANTITY, Tree.BASE_FOLIAGE_DIAMETER);
+				Tree t = new Tree(this.context, this.space, this, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_FOLIAGE_DIAMETER);
 				this.context.add(t);
 				this.space.moveTo(t, column * MIN_DISTANCE_BETWEEN_TREES, STARTING_TREE_VISUALISATION_Y_OFFSET, row * MIN_DISTANCE_BETWEEN_TREES);
 			}
@@ -187,11 +186,15 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		}
 	}
 	
-	//TODO remove when tuple space will be implemented
+	//TODO from here remove when tuple space will be implemented
 	
 	public void addNutrients(double nutrients) {
 		this.nutrients += nutrients;
 	}
 	
-		
+	public double getNutrients() {
+		return nutrients;
+	}
+	
+	// Until here
 }

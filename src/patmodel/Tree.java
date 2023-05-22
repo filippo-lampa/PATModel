@@ -2,13 +2,9 @@ package patmodel;
 
 import java.util.ArrayList;
 
-import org.stringtemplate.v4.compiler.STParser.namedArg_return;
-
 import repast.simphony.context.Context;
 import repast.simphony.engine.schedule.ScheduledMethod;
-import repast.simphony.relogo.ide.dynamics.NetLogoSystemDynamicsParser.intg_return;
 import repast.simphony.space.continuous.ContinuousSpace;
-import repast.simphony.space.grid.Grid;
 import repast.simphony.util.ContextUtils;
 
 public class Tree {
@@ -29,45 +25,42 @@ public class Tree {
 	private double age = 0;
 	private double diameter = 0.0;
 	
+	private Context<Object> context;
 	private ContinuousSpace<Object> space;
-	private Grid<Object> grid;
-	private Soil soil;
-	private ArrayList<Apple> appleSet;
+	private ArrayList<Apple> appleList;
+
+	private AppleOrchard soil;
 	
-	public Tree(ContinuousSpace<Object> space, Grid<Object> grid) {
+	public Tree(Context<Object> context, ContinuousSpace<Object> space, AppleOrchard soil, double width, double height, double age, double diameter) {
+		this.context = context;
 		this.space = space;
-		this.grid = grid;
-	}
-	
-	public Tree(ContinuousSpace<Object> space, Grid<Object> grid, double width, double height, double age, ArrayList<Apple> apples, double diameter) {
-		this.space = space;
-		this.grid = grid;
 		this.width = width;
 		this.height = height;
 		this.age = age;
-		this.appleSet = apples;
+		this.appleList = new ArrayList<>();
+		//TODO in case implement initial apple creation, note that age matters!!!
 		this.diameter = diameter;
 	}
 	
 	
-	private void absorbNutrients(double amount) {
-		soil.decreaseNutrients(amount);
+	private boolean absorbNutrients(double amount) {
+		if (soil.getNutrients()>=amount) {
+			soil.addNutrients(-amount);
+			return true;
+		}
+		return false;
 	}
 	
 	private double calcNutrientsToGrow() {
-		return width + height + diameter + (age/10) + (appleQuantity*0.2);
+		return width + height + diameter + (age/10) + (appleList.size()*0.2);
 	}
 	
 	private boolean checkAgeTooOld() {
-		if(age >= MAX_AGE ) {
-			return true;
-		}else {
-			return false;
-		}	
+		return age >= MAX_AGE;
 	}
 	
 	private boolean checkAgeTooYoung() {
-		return age > MIN_AGE_PRODUCE_APPLE;
+		return age <= MIN_AGE_PRODUCE_APPLE;
 	}
 	
 	private double calcNutrientsToSurvive( ) {
@@ -75,16 +68,26 @@ public class Tree {
 	}
 	
 	private void createApples() {
-		if(checkAgeTooYoung()) {
-			Apple newApple = Apple();
-			if(appleSet.size() > MAX_APPLE_QUANTITY) // remove additional apples
-				releaseApples(appleSet.size() - MAX_APPLE_QUANTITY);
+		if(!checkAgeTooYoung()) {
+			Apple newApple = new Apple(this.context, this.space, this.soil);
+			if(appleList.size() > MAX_APPLE_QUANTITY) // remove additional apples
+				releaseApples(appleList.size() - MAX_APPLE_QUANTITY);
+			appleList.add(newApple);
 		}		
 	}
 	
 	private void die() {
 		var context = ContextUtils.getContext(this);
 		context.remove(this);
+	}
+	
+	private void notEnoughNutrients() {
+		if(appleList.size() > 0) {
+			releaseApples(1);
+		} else {
+			die();
+		}
+		return;
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 3)
@@ -97,27 +100,26 @@ public class Tree {
 			return;
 		}
 		if(getSoilNutrientsQuantity() >= toGrow) {
-			absorbNutrients(toGrow);
+			var result = absorbNutrients(toGrow);
+			if(!result) {
+				notEnoughNutrients();
+			}
 			createApples();
 			grow();
 		}
 		else if(getSoilNutrientsQuantity() >= toSurvive){
-			absorbNutrients(toSurvive);
-		}else {
-			if(appleSet.size() > 0) {
-				releaseApples(1);
-			} else {
-				die();
+			var result = absorbNutrients(toSurvive);
+			if (!result) {
+				notEnoughNutrients();
 			}
-			return;
+		}else {
+			notEnoughNutrients();
 		}
 		age += 1;
 	}
 	
 	private double getSoilNutrientsQuantity() {
-		//return soil.getNutrientsAmount();
-		//TODO wait for communication implementation
-		return 0;
+		return soil.getNutrients();
 	}
 	
 	private void grow() {
@@ -135,11 +137,11 @@ public class Tree {
 	}
 	
 	public void releaseApples(int nApples) {
-		for(int i = 0; int < nApples; i++) {//release a random apple
-			int index = (int)(Math.random() * appleSet.size());
-			Apple toRemove = appleSet.get(index);
+		for(int i = 0; i < nApples; i++) {//release a random apple
+			int index = AppleOrchard.RANDOM.nextInt(appleList.size());
+			Apple toRemove = appleList.get(index);
 			toRemove.fall();
-			appleSet.remove(toRemove);
+			appleList.remove(toRemove);
 		}
 	}
 	
