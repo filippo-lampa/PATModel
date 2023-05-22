@@ -54,10 +54,6 @@ public final class ShadowsUtility {
 			}
 		}
 		return intersect;
-		
-		/*return Stream.of(neighbours)
-				.filter(t -> space.getDistance(space.getLocation(t), space.getLocation(tree)) < tree.getWidth()/2 + t.getWidth()/2)
-				.toList();*/
 	}
 	
 	//TODO control
@@ -71,10 +67,6 @@ public final class ShadowsUtility {
 			}
 		}
 		return taller;
-		
-		/*return Stream.of(neighbours)
-				.filter(t -> t.getHeight() > treeHeight)
-				.toList();*/
 	}
 	
 	private static double percentageCalculation(ContinuousSpace<Object> space, List<Tree> neighbours, Tree tree) {

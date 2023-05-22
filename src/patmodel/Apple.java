@@ -1,19 +1,11 @@
 package patmodel;
 
 import repast.simphony.engine.schedule.ScheduledMethod;
-import repast.simphony.query.space.grid.GridCell;
-import repast.simphony.query.space.grid.GridCellNgh;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
-import repast.simphony.space.grid.Grid;
-import repast.simphony.space.grid.GridPoint;
 import repast.simphony.context.Context;
 
-import java.util.List;
-import java.util.Random;
-
 public class Apple {
-
 	// cm
 	private double diameter;
 	// cm
@@ -32,7 +24,6 @@ public class Apple {
 	
 	public Apple(Context<Object> context,
 				 ContinuousSpace<Object> space, 
-				 Grid<Object> grid,
 				 AppleOrchard orchard){
 		this.context = context;
 		this.orchard = orchard;
@@ -57,19 +48,19 @@ public class Apple {
 	}	
 
 	private void becomeTreeOrNutrients() {
-		if(new Random().nextBoolean()) 
+		if(AppleOrchard.RANDOM.nextBoolean()) 
 			this.becomeNutrients();
 		else
 			this.becomeTree();
 	}
 	
 	private void becomeNutrients() {
-		this.orchard.addNutrients();
+		this.orchard.addNutrients(AppleOrchard.APPLE_NUTRIENT_AMOUNT);
 	}
 	
 	private void becomeTree() {
 		if(this.isFallen) {
-			Tree t = new Tree(this.space, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_APPLE_QUANTITY, Tree.BASE_FOLIAGE_DIAMETER);
+			Tree t = new Tree(this.context, this.space, this.orchard, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_FOLIAGE_DIAMETER);
 			this.context.add(t);
 			var pointToMoveTo = this.casualNearPoint();
 			this.space.moveTo(t, pointToMoveTo.getX(), 

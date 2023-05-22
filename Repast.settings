@@ -12,6 +12,10 @@
     <string>SettingsRegistryId</string>
     <string>Repast.registry</string>
     <string>LastLoadedScenario</string>
+<<<<<<< HEAD
     <string>C:\Users\matte\git\PATModel\PATModel.rs</string>
+=======
+    <string>C:\Users\Filippo\eclipse-workspace\PATModel\PATModel.rs</string>
+>>>>>>> refs/heads/development
   </hashtable>
 </simphony.settings.SettingsRegistry>
