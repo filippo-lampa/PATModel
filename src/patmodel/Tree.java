@@ -1,6 +1,12 @@
 package patmodel;
 
+import java.util.ArrayList;
+
+import org.stringtemplate.v4.compiler.STParser.namedArg_return;
+
+import repast.simphony.context.Context;
 import repast.simphony.engine.schedule.ScheduledMethod;
+import repast.simphony.relogo.ide.dynamics.NetLogoSystemDynamicsParser.intg_return;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.grid.Grid;
 import repast.simphony.util.ContextUtils;
@@ -21,36 +27,35 @@ public class Tree {
 	private double width = 0.0;
 	private double height = 0.0;
 	private double age = 0;
-	private int appleQuantity = 0;
 	private double diameter = 0.0;
 	
 	private ContinuousSpace<Object> space;
 	private Grid<Object> grid;
+	private Soil soil;
+	private ArrayList<Apple> appleSet;
 	
 	public Tree(ContinuousSpace<Object> space, Grid<Object> grid) {
 		this.space = space;
 		this.grid = grid;
 	}
 	
-	public Tree(ContinuousSpace<Object> space, Grid<Object> grid, double width, double height, double age, int appleQuantity, double diameter) {
+	public Tree(ContinuousSpace<Object> space, Grid<Object> grid, double width, double height, double age, ArrayList<Apple> apples, double diameter) {
 		this.space = space;
 		this.grid = grid;
 		this.width = width;
 		this.height = height;
 		this.age = age;
-		this.appleQuantity = appleQuantity;
+		this.appleSet = apples;
 		this.diameter = diameter;
 	}
 	
 	
 	private void absorbNutrients(double amount) {
-		//soil.decreaseNutrients(amount);
-		//TODO wait for communication implementation
+		soil.decreaseNutrients(amount);
 	}
 	
 	private double calcNutrientsToGrow() {
 		return width + height + diameter + (age/10) + (appleQuantity*0.2);
-		//TODO implement formula to calculate the correct value
 	}
 	
 	private boolean checkAgeTooOld() {
@@ -63,16 +68,18 @@ public class Tree {
 	
 	private boolean checkAgeTooYoung() {
 		return age > MIN_AGE_PRODUCE_APPLE;
-		}
+	}
 	
 	private double calcNutrientsToSurvive( ) {
-		//TODO implement formula to calculate the correct value
 		return (width + height + diameter + (age/10))/2;
 	}
 	
 	private void createApples() {
-		if(checkAgeTooYoung() && appleQuantity < MAX_APPLE_QUANTITY)
-			appleQuantity =+1;
+		if(checkAgeTooYoung()) {
+			Apple newApple = Apple();
+			if(appleSet.size() > MAX_APPLE_QUANTITY) // remove additional apples
+				releaseApples(appleSet.size() - MAX_APPLE_QUANTITY);
+		}		
 	}
 	
 	private void die() {
@@ -97,7 +104,11 @@ public class Tree {
 		else if(getSoilNutrientsQuantity() >= toSurvive){
 			absorbNutrients(toSurvive);
 		}else {
-			die();
+			if(appleSet.size() > 0) {
+				releaseApples(1);
+			} else {
+				die();
+			}
 			return;
 		}
 		age += 1;
@@ -110,9 +121,9 @@ public class Tree {
 	}
 	
 	private void grow() {
-		width =+ 0.0001;
-		height=+ 0.01;
-		diameter =+ 0.02;
+		width += 0.0001;
+		height += 0.01;
+		diameter += 0.02;
 	}
 	
 	public double getWidth() {
@@ -122,4 +133,15 @@ public class Tree {
 	public double getHeight() {
 		return height;
 	}
+	
+	public void releaseApples(int nApples) {
+		for(int i = 0; int < nApples; i++) {//release a random apple
+			int index = (int)(Math.random() * appleSet.size());
+			Apple toRemove = appleSet.get(index);
+			toRemove.fall();
+			appleSet.remove(toRemove);
+		}
+	}
+	
+	
 }
