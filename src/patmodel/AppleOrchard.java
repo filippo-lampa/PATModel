@@ -13,16 +13,14 @@ import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.RandomCartesianAdder;
-import repast.simphony.space.grid.Grid;
 
 public class AppleOrchard extends DefaultContext<Object> implements ContextBuilder<Object> {
-	private static final double MIN_DISTANCE_BETWEEN_TREES = 3;
+	private static final double MIN_DISTANCE_BETWEEN_TREES = 3; 
+	private static final double RAINING_NUTRIENTS_TRESHOLD = 0.5;
+	private static final double SUNNY_NUTRIENTS_TRESHOLD = -0.1;
 	private Context<Object> context;
-	private Grid<Object> grid;
 	private ContinuousSpace<Object> space;
-
-	private double nutrients;
-
+	
 	private boolean isRaining;
 	private boolean isSunny;
 	private boolean isWindy;
@@ -41,53 +39,62 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	private int sunEndTimetick;
 	public static final Random RANDOM = new Random();
 
+	
+	private double nutrients;
+	
+	public static final int TREE_VISUALISATION_Y_OFFSET = 0; // required offset to keep trees stuck to the ground when scaling is at 1.0
+	public static final double STARTING_TREE_VISUALISATION_Y_OFFSET = 1.7; // required offset to keep trees stuck to the ground when scaling is at 1.0
+	public static final double APPLE_NUTRIENT_AMOUNT = 1.5;
+	
 	@Override
 	public Context<Object> build(Context<Object> context) {
-
-		context.setId("PinkAppleModel");
+		
+		context.setId("PATModel");
 
 		ContinuousSpaceFactory spaceFactory = ContinuousSpaceFactoryFinder.createContinuousSpaceFactory(null);
 		this.space = spaceFactory.createContinuousSpace(" space ", context, new RandomCartesianAdder<Object>(),
-				new repast.simphony.space.continuous.InfiniteBorders<>(), 100, 100, 100);
+				new repast.simphony.space.continuous.InfiniteBorders<>(), 15, 15, 15);
 
-		this.context = context;
-
-		Parameters p;
-
-		this.isRaining = false;
-		this.isWindy = false;
-		this.isSunny = false;
-
-		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
-		this.nutrients = 1;
-		initAgents();
+ 		this.context = context;
+ 		
+ 		Parameters p;
+ 	
+ 		SoilDesign soil = new SoilDesign();
+		context.add(soil);
+		space.moveTo(soil, 7.5, 0, 7.5);
+		
+ 		this.isRaining = false;
+ 		this.isWindy = false;
+ 		this.isSunny = false;
+		
+ 		//minimal nutrients for a plant to survive at first time tick is equal to 0.1
+ 		this.nutrients = 1;
+ 		initAgents();
 		return context;
 	}
 
 	private void initAgents() {
 		// TODO init soil and get height
 		double soilHeight = 1;
-		for (int row = 1; row < this.space.getDimensions().getDepth() / MIN_DISTANCE_BETWEEN_TREES; ++row) {
-			for (int column = 1; column < this.space.getDimensions().getWidth()
-					/ MIN_DISTANCE_BETWEEN_TREES; ++column) {
-				Tree t = new Tree(space, grid, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE,
-						Tree.BASE_APPLE_QUANTITY, Tree.BASE_FOLIAGE_DIAMETER);
+		for(int row = 1; row<this.space.getDimensions().getDepth()/MIN_DISTANCE_BETWEEN_TREES; row++) {
+			for(int column = 1; column<this.space.getDimensions().getWidth()/MIN_DISTANCE_BETWEEN_TREES; column++) {
+				Tree t = new Tree(this.context, this.space, this, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_FOLIAGE_DIAMETER);
 				this.context.add(t);
-				this.space.moveTo(t, column * MIN_DISTANCE_BETWEEN_TREES, soilHeight, row * MIN_DISTANCE_BETWEEN_TREES);
+				this.space.moveTo(t, column * MIN_DISTANCE_BETWEEN_TREES, STARTING_TREE_VISUALISATION_Y_OFFSET, row * MIN_DISTANCE_BETWEEN_TREES);
 			}
 		}
 	}
 
 	public void rain(boolean state) {
-
+		this.isRaining = state;
 	}
 
 	public void wind(boolean state) {
-
+		this.isWindy = state;
 	}
 
 	public void sun(boolean state) {
-
+		this.isSunny = state;
 	}
 
 	@ScheduledMethod(start = 1, interval = 1, priority = 2)
@@ -172,9 +179,22 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	}
 
 	private void deltaNutrients() {
-		if (isRaining) {
-
+		if(isRaining) {
+			nutrients += RAINING_NUTRIENTS_TRESHOLD;
+		} else if(isSunny) {
+			nutrients += SUNNY_NUTRIENTS_TRESHOLD;
 		}
 	}
-
+	
+	//TODO from here remove when tuple space will be implemented
+	
+	public void addNutrients(double nutrients) {
+		this.nutrients += nutrients;
+	}
+	
+	public double getNutrients() {
+		return nutrients;
+	}
+	
+	// Until here
 }
