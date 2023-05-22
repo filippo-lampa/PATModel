@@ -1,5 +1,8 @@
 package patmodel;
 
+import java.util.Random;
+
+import kotlin.Pair;
 import repast.simphony.context.Context;
 import repast.simphony.context.DefaultContext;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactory;
@@ -29,10 +32,14 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	// timeticks
 	private int rainStartTimetick;
 	private int windStartTimetick;
+
+	// TODO: add array weather history: max 30 days
+
 	private int sunStartTimetick;
 	private int rainEndTimetick;
 	private int windEndTimetick;
 	private int sunEndTimetick;
+	public static final Random RANDOM = new Random();
 
 	
 	private double nutrients;
@@ -66,9 +73,9 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
  		initAgents();
 		return context;
 	}
-	
+
 	private void initAgents() {
-		//TODO init soil and get height
+		// TODO init soil and get height
 		double soilHeight = 1;
 		for(int row = 1; row<this.space.getDimensions().getDepth()/MIN_DISTANCE_BETWEEN_TREES; row++) {
 			for(int column = 1; column<this.space.getDimensions().getWidth()/MIN_DISTANCE_BETWEEN_TREES; column++) {
@@ -78,7 +85,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 			}
 		}
 	}
-	
+
 	public void rain(boolean state) {
 		this.isRaining = state;
 	}
@@ -95,7 +102,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	private void updateSoil() {
 		deltaNutrients();
 	}
-	
+
 	@ScheduledMethod(start = 1, interval = 1, priority = 1)
 	private void updateWeather() {
 
@@ -104,55 +111,71 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		double rainDuration = currentTick - this.rainStartTimetick;
 		double windDuration = currentTick - this.windStartTimetick;
 		double sunDuration = currentTick - this.sunStartTimetick;
-		double weight_rain = computeRandomWeight(currentTick);
-		double weight_wind = computeRandomWeight(currentTick);
-		double weight_sun = computeRandomWeight(currentTick);
-		
+		computeWeather(currentTick);
+
 		// Randomness of the three probability combined
-		
+
 		// Actual condition based on probability combined ( what happens )
-		
+
 	}
-	
-	private double computeRandomWeight(double currentTick) {
-		double weight = 0;
-		Season season = computeSeason(currentTick);
-		
-		//Compute weight for an event
-		switch(season) {
-			case SPRING:
-				//high sun / mid wind / low rain
-				break;
-			case SUMMER:
-				//high sun / low wind / low rain
-				break;
-			case AUTUMN:
-				//high rain / high wind / low sun
-				break;
-			case WINTER:
-				//mid rain / mid wind / low sun 
-				break;
+
+	private void computeWeather(double currentTick) {
+		var season = computeSeason(currentTick);
+		var low = new Pair<>(0.0, 0.34);
+		var medium = new Pair<>(0.34, 0.67);
+		var high = new Pair<>(0.67, 1.0);
+		// Computing weather for an event
+		switch (season) {
+		case WINTER:
+			// high rain / mid wind / low sun
+			weather(high, medium, low);
+			break;
+		case SPRING:
+			// low rain / mid wind / mid sun
+			weather(low, medium, medium);
+			break;
+		case SUMMER:
+			// low rain / low wind / high sun
+			weather(low, low, high);
+			break;
+		case AUTUMN:
+			// high rain / high wind / low sun
+			weather(high, high, low);
+			break;
 		}
-		
-		return weight;
+	}
+
+	private void weather(Pair<Double, Double> rain, Pair<Double, Double> wind, Pair<Double, Double> sun) {
+		var rainRatio = RANDOM.nextDouble(rain.getFirst(), rain.getSecond());
+		rainRatio = rainRatio - rain.getFirst();
+		var cond = rainRatio > (rain.getSecond() - rain.getFirst()) / 2;
+		rain(cond);
+		var windRatio = RANDOM.nextDouble(wind.getFirst(), wind.getSecond());
+		windRatio = windRatio - wind.getFirst();
+		cond = windRatio > (wind.getSecond() - wind.getFirst()) / 2;
+		wind(cond);
+		var sunRatio = RANDOM.nextDouble(sun.getFirst(), sun.getSecond());
+		sunRatio = sunRatio - sun.getFirst();
+		cond = sunRatio > (sun.getSecond() - sun.getFirst()) / 2;
+		sun(cond);
 	}
 
 	private Season computeSeason(double currentTick) {
-		//Compute the month 
+		// Compute the month
 		int month = (int) ((currentTick % 366) / 30);
 		if (month == 0) {
-			//case day 1, aka time tick 0
+			// case day 1, aka time tick 0
 			month = 1;
 		}
 		if (month < 1 || month > 12) {
 			throw new IllegalArgumentException("time tick: " + currentTick + " generated invalid month: " + month);
 		}
-		return switch(month) {
-			case 3, 4, 5 -> Season.SPRING;
-			case 6, 7, 8 -> Season.SUMMER;
-			case 9, 10, 11 -> Season.AUTUMN;
-			case 12, 1, 2 -> Season.WINTER;
-			default -> Season.WINTER;
+		return switch (month) {
+		case 3, 4, 5 -> Season.SPRING;
+		case 6, 7, 8 -> Season.SUMMER;
+		case 9, 10, 11 -> Season.AUTUMN;
+		case 12, 1, 2 -> Season.WINTER;
+		default -> Season.WINTER;
 		};
 	}
 
