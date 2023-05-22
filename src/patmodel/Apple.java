@@ -54,9 +54,7 @@ public class Apple {
 	
 	private void grow() {
 		this.diameter += 0.1;
-	}
-
-	
+	}	
 
 	private void becomeTreeOrNutrients() {
 		if(new Random().nextBoolean()) 
