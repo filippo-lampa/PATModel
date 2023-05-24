@@ -102,16 +102,16 @@ public final class ShadowsUtility {
 		for (LinkedList<Tree> list : neighbourIntersections) {
 			
 			if(list.size() == 1) {
-				area += intersectionAreaTwoCircles(space, tree, list.getFirst());
+				areaShadow += intersectionAreaTwoCircles(space, tree, list.getFirst());
 			}
 			else {
-				for(int i = 0; i<list.size(); i++) {
-					if(i == 0) {
-						area += intersectionAreaTwoCircles(space, tree, list.get(0));
+				for(int j = 0; j<list.size(); j++) {
+					if(j == 0) {
+						areaShadow += intersectionAreaTwoCircles(space, tree, list.get(0));
 					}
 					else {
-						area += intersectionAreaTwoCircles(space, tree, list.get(i)) 
-								- circleOverlapTriangleArea(space, tree, list.get(i-1), list.get(i));
+						areaShadow += intersectionAreaTwoCircles(space, tree, list.get(j)) 
+								- circleOverlapTriangleArea(space, tree, list.get(j-1), list.get(j));
 					}
 				}
 			}	
@@ -124,7 +124,7 @@ public final class ShadowsUtility {
 	}
 	
 	public static List<LinkedList<Tree>> mergeLists(List<LinkedList<Tree>> lists) {
-        List<LinkedList<Tree>> mergedLists = new ArrayList<Tree>();
+        List<LinkedList<Tree>> mergedLists = new ArrayList<LinkedList<Tree>>();
 
         for (LinkedList<Tree> list : lists) {
             boolean merged = false;
@@ -194,7 +194,7 @@ public final class ShadowsUtility {
 	
 	public static boolean hasCommonArea(NdPoint center1, double r1, NdPoint center2, double r2, NdPoint center3, double r3) {
         // Find the intersection points of the circles
-        Point2D.Double[] intersections = findIntersectionPoints(center2, r2, center3, r3);
+        NdPoint[] intersections = findIntersectionPoints(center2, r2, center3, r3);
         
         return isPointInsideCircle(center1, r1, intersections[0]) ||
                 isPointInsideCircle(center1, r1, intersections[1]);
@@ -208,7 +208,7 @@ public final class ShadowsUtility {
     public static NdPoint[] findIntersectionPoints(NdPoint center1, double r1, NdPoint center2, double r2) {
 
         // Calculate the distance between the centers of the two circles
-    	double distance = sqrt((center2.getX() - center1.getX())^2 + (center2.getY() - center1.getY())^2);
+    	double distance = Math.sqrt(Math.pow((center2.getX() - center1.getX()),2) + Math.pow((center2.getY() - center1.getY()),2));
 
         // Calculate the distance from the first center to the intersection point
         double a = (r1 * r1 - r2 * r2 + distance * distance) / (2 * distance);
