@@ -2,10 +2,13 @@ package patmodel;
 
 import java.util.stream.Stream;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
 import repast.simphony.space.continuous.ContinuousSpace;
+import repast.simphony.space.continuous.NdPoint;
 
 public final class ShadowsUtility {
 
@@ -13,27 +16,20 @@ public final class ShadowsUtility {
         throw new java.lang.UnsupportedOperationException("Utility class and cannot be instantiated");
     }
 	
-	//TODO possibility to change the ContinuousSpace to a variable;
 	
-	
-	//TODO modify
 	public static double percentageTreeCovered(Tree tree, ContinuousSpace<Object> space){
 		
 		List<Tree> neighbours = getNeighboursTreeInRange(tree, space);
 		neighbours = filterNeighboursThatIntersect(space, neighbours, tree);
 		neighbours = filterTallerNeighbours(neighbours, tree.getHeight());
-		//at this point we should have the trees that intersect with the one passed and that are taller
 		
-		//at the end there are the function needed for the areas, but
-		// i have to find a way to understand which circles are intersected with each other
-		
-		percentageCalculation(space, neighbours, tree);
-		
-        return 1.0;
+        return percentageCalculation(space, neighbours, tree);
     }
 	
-	//TODO control and decide what to do with the maxRange variable
-	public static List<Tree> getNeighboursTreeInRange(Tree tree, ContinuousSpace<Object> space) {
+	//-------------------- Starting filter of neighbors -------------------------
+	
+	
+	private static List<Tree> getNeighboursTreeInRange(Tree tree, ContinuousSpace<Object> space) {
 		double maxRange = 4.0; //this depend on the max radius possible * 2
 		
 		return Stream.of(space.getObjects())
@@ -43,7 +39,7 @@ public final class ShadowsUtility {
 				.toList();
 	}
 	
-	//TODO control 
+	
 	private static List<Tree> filterNeighboursThatIntersect(ContinuousSpace<Object> space, List<Tree> neighbours, Tree tree) {
 		
 		List<Tree> intersect = new ArrayList<Tree>();
@@ -56,7 +52,6 @@ public final class ShadowsUtility {
 		return intersect;
 	}
 	
-	//TODO control
 	private static List<Tree> filterTallerNeighbours(List<Tree> neighbours, double treeHeight) {
 		
 		List<Tree> taller = new ArrayList<Tree>();
@@ -69,11 +64,13 @@ public final class ShadowsUtility {
 		return taller;
 	}
 	
+	//----------------------------------------------------------------------
+	
+	//-------------------- Shadow calculation -------------------------
+	
 	private static double percentageCalculation(ContinuousSpace<Object> space, List<Tree> neighbours, Tree tree) {
 		
-		List<List<Tree>> couples = new ArrayList<List<Tree>>();
-		List<Tree> alones = new ArrayList<Tree>();
-		
+		List<LinkedList<Tree>> neighbourIntersections = new ArrayList<LinkedList<Tree>>();
 		List<Tree> app = new ArrayList<>();
 		app.addAll(neighbours);
 		
@@ -82,26 +79,87 @@ public final class ShadowsUtility {
 			app.remove(t);
 			i = 0;
 			for(Tree t2 : app) {
-				if(space.getDistance(space.getLocation(t), space.getLocation(t2)) < t.getWidth()/2 + t2.getWidth()/2) {
-					List<Tree> couple = new ArrayList<>();
+				if(space.getDistance(space.getLocation(t), space.getLocation(t2)) < t.getWidth()/2 + t2.getWidth()/2
+						&& hasCommonArea(space.getLocation(tree), tree.getWidth(), space.getLocation(t), t.getWidth(), space.getLocation(t2), t2.getWidth())) {
+					LinkedList<Tree> couple = new LinkedList<Tree>();
 					couple.add(t);
 					couple.add(t2);
-					couples.add(couple);
+					neighbourIntersections.add(couple);
 					i++;
 				}
 			}
-			if(i==0) alones.add(t);
+			if(i==0) {
+				LinkedList<Tree> alone = new LinkedList<Tree>();
+				alone.add(t);
+				neighbourIntersections.add(alone);
+			}
 		}
 		
-		double areaCouples = calculateAreaIntersectionCouplesTree(space, couples, tree);
-		double areaAlones = calculateAreaIntersectionAlonesTree(space, alones, tree);
+		
+		neighbourIntersections = mergeLists(neighbourIntersections);
+		
+		double areaShadow = 0.0;
+		for (LinkedList<Tree> list : neighbourIntersections) {
+			
+			if(list.size() == 1) {
+				area += intersectionAreaTwoCircles(space, tree, list.getFirst());
+			}
+			else {
+				for(int i = 0; i<list.size(); i++) {
+					if(i == 0) {
+						area += intersectionAreaTwoCircles(space, tree, list.get(0));
+					}
+					else {
+						area += intersectionAreaTwoCircles(space, tree, list.get(i)) 
+								- circleOverlapTriangleArea(space, tree, list.get(i-1), list.get(i));
+					}
+				}
+			}	
+		}
+		
 		double areaTreeTotal = (tree.getWidth()*tree.getWidth())*Math.PI;
 		
-		double percentageAreaCovered = (areaAlones+areaCouples)/areaTreeTotal;
-		
-		return percentageAreaCovered;
+		return areaShadow/areaTreeTotal;
 		
 	}
+	
+	public static List<LinkedList<Tree>> mergeLists(List<LinkedList<Tree>> lists) {
+        List<LinkedList<Tree>> mergedLists = new ArrayList<Tree>();
+
+        for (LinkedList<Tree> list : lists) {
+            boolean merged = false;
+
+            // Iterate over the merged lists to find a merge candidate
+            ListIterator<LinkedList<Tree>> iterator = mergedLists.listIterator();
+            while (iterator.hasNext()) {
+                LinkedList<Tree> mergedList = iterator.next();
+
+                // Check if the first element of the current list matches the last element of the merged list
+                if (mergedList.getLast().equals(list.getFirst())) {
+                    mergedList.removeLast();
+                    mergedList.addAll(list);
+                    merged = true;
+                    break;
+                }
+
+                // Check if the last element of the current list matches the first element of the merged list
+                if (list.getLast().equals(mergedList.getFirst())) {
+                    mergedList.removeFirst();
+                    list.addAll(mergedList);
+                    iterator.set(list);
+                    merged = true;
+                    break;
+                }
+            }
+
+            if (!merged) {
+                // If no merge occurred, add the list as a separate merged list as linked list
+                mergedLists.add(list);
+            }
+        }
+
+        return mergedLists;
+    }
 	
 	private static double calculateAreaIntersectionCouplesTree(ContinuousSpace<Object> space, List<List<Tree>> couples, Tree tree) {
 		
@@ -129,8 +187,60 @@ public final class ShadowsUtility {
 		return totalArea;
 	}
 	
+	//-------------------------------------------------------------------------
 	
-	public static double intersectionAreaTwoCircles(ContinuousSpace<Object> space, Tree tree1, Tree tree2) {
+	//---------------- Common area calculation ------------------------------
+	
+	
+	public static boolean hasCommonArea(NdPoint center1, double r1, NdPoint center2, double r2, NdPoint center3, double r3) {
+        // Find the intersection points of the circles
+        Point2D.Double[] intersections = findIntersectionPoints(center2, r2, center3, r3);
+        
+        return isPointInsideCircle(center1, r1, intersections[0]) ||
+                isPointInsideCircle(center1, r1, intersections[1]);
+    }
+
+    public static boolean isPointInsideCircle(NdPoint center1, double radius1, NdPoint point) {
+        double distance1 = Math.sqrt(Math.pow(point.getX() - center1.getX(), 2) + Math.pow(point.getY() - center1.getY(), 2));
+        return distance1 <= radius1;
+    }
+
+    public static NdPoint[] findIntersectionPoints(NdPoint center1, double r1, NdPoint center2, double r2) {
+
+        // Calculate the distance between the centers of the two circles
+    	double distance = sqrt((center2.getX() - center1.getX())^2 + (center2.getY() - center1.getY())^2);
+
+        // Calculate the distance from the first center to the intersection point
+        double a = (r1 * r1 - r2 * r2 + distance * distance) / (2 * distance);
+
+        // Calculate the height of the triangle formed by the centers and the intersection point
+        double h = Math.sqrt(r1 * r1 - a * a);
+
+        // Calculate the coordinates of the intersection points
+        double x3 = center1.getX() + a * (center2.getX() - center1.getX()) / distance;
+        double y3 = center1.getY() + a * (center2.getY() - center1.getY()) / distance;
+
+        // Calculate the coordinates of Intersection Point 1
+        double x = x3 + h * (center2.getY() - center1.getY()) / distance;
+        double y = y3 - h * (center2.getX() - center1.getX()) / distance;
+        NdPoint intersection1 = new NdPoint(x,y);
+
+        // Calculate the coordinates of Intersection Point 2
+        x = x3 - h * (center2.getY() - center1.getY()) / distance;
+        y = y3 + h * (center2.getX() - center1.getX()) / distance;
+        NdPoint intersection2 = new NdPoint(x,y);
+
+        // Return the intersection points as an array
+        return new NdPoint[]{intersection1, intersection2};
+
+    }
+	
+	//------------------------------------------------
+    
+    
+    //----------- Math ----------------
+	
+	private static double intersectionAreaTwoCircles(ContinuousSpace<Object> space, Tree tree1, Tree tree2) {
 	    double d = space.getDistance(space.getLocation(tree1), space.getLocation(tree2));
 	    double r1 = tree1.getWidth()/2;
 	    double r2 = tree2.getWidth()/2;
@@ -143,7 +253,7 @@ public final class ShadowsUtility {
 	}
 	
 	
-	public static double circleOverlapTriangleArea(ContinuousSpace<Object> space, Tree tree1, Tree tree2, Tree tree3) {
+	private static double circleOverlapTriangleArea(ContinuousSpace<Object> space, Tree tree1, Tree tree2, Tree tree3) {
 		double d12 = space.getDistance(space.getLocation(tree1), space.getLocation(tree2));
 		double d23 = space.getDistance(space.getLocation(tree2), space.getLocation(tree3));
 		double d31 = space.getDistance(space.getLocation(tree3), space.getLocation(tree1));
