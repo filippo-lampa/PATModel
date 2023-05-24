@@ -24,7 +24,7 @@ public class Tree {
 	private final int MAX_FOLIAGE_DIAMETER = 4;
 	private final int MAX_HEIGHT = 3;
 	private final int MAX_APPLE_QUANTITY = 20;
-	private final int MAX_WIDTH = 0.3;
+	private final double MAX_WIDTH = 0.3;
 	
 	private double width = 0.0;
 	private double height = 0.0;
