@@ -2,8 +2,13 @@ package patmodel;
 
 import java.util.ArrayList;
 
+import org.apache.commons.math3.optim.nonlinear.vector.Weight;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHeight;
+
+import groovyjarjarantlr4.v4.parse.ANTLRParser.finallyClause_return;
 import repast.simphony.context.Context;
 import repast.simphony.engine.schedule.ScheduledMethod;
+import repast.simphony.relogo.ide.dynamics.NetLogoSystemDynamicsParser.intg_return;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.util.ContextUtils;
 
@@ -19,6 +24,7 @@ public class Tree {
 	private final int MAX_FOLIAGE_DIAMETER = 4;
 	private final int MAX_HEIGHT = 3;
 	private final int MAX_APPLE_QUANTITY = 20;
+	private final double MAX_WIDTH = 0.3;
 	
 	private double width = 0.0;
 	private double height = 0.0;
@@ -52,7 +58,14 @@ public class Tree {
 	}
 	
 	private double calcNutrientsToGrow() {
-		return width + height + diameter + (age/10) + (appleList.size()*0.2);
+		double ageContributions = 0;
+		double ageInYears = age/365;
+		if(ageInYears > 10.0) {//Once the tree is bigger thant 10 years, it will always need the maximum amount which is 0.01
+			ageContributions = 0.001;
+		} else {
+			ageContributions = (ageInYears)/100;
+		}
+		return 0.1 + (width * 0.002) + (height * 0.002) + (diameter * 0.001) + ageContributions + (appleList.size()*0.002);
 	}
 	
 	private boolean checkAgeTooOld() {
@@ -64,7 +77,7 @@ public class Tree {
 	}
 	
 	private double calcNutrientsToSurvive( ) {
-		return (width + height + diameter + (age/10))/2;
+		return (width * 0.002) + (height * 0.002) + (diameter * 0.001);
 	}
 	
 	private void createApples() {
@@ -100,7 +113,7 @@ public class Tree {
 			return;
 		}
 		if(getSoilNutrientsQuantity() >= toGrow) {
-			var result = absorbNutrients(toGrow);
+			boolean result = absorbNutrients(toGrow);
 			if(!result) {
 				notEnoughNutrients();
 			}
@@ -108,7 +121,7 @@ public class Tree {
 			grow();
 		}
 		else if(getSoilNutrientsQuantity() >= toSurvive){
-			var result = absorbNutrients(toSurvive);
+			boolean result = absorbNutrients(toSurvive);
 			if (!result) {
 				notEnoughNutrients();
 			}
@@ -123,9 +136,9 @@ public class Tree {
 	}
 	
 	private void grow() {
-		width += 0.0001;
-		height += 0.01;
-		diameter += 0.02;
+		if(width < MAX_WIDTH) width += 0.0001;
+		if(height < MAX_HEIGHT) height += 0.01;
+		if(diameter < MAX_FOLIAGE_DIAMETER) diameter += 0.02;
 	}
 	
 	public double getWidth() {
