@@ -32,7 +32,7 @@ public class Apple {
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 4)
-	private void update() {
+	public void update() {
 			this.grow();
 			if(this.diameter == 7)
 				this.fall();	
@@ -62,7 +62,7 @@ public class Apple {
 		if(this.isFallen) {
 			Tree t = new Tree(this.context, this.space, this.orchard, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_FOLIAGE_DIAMETER);
 			this.context.add(t);
-			var pointToMoveTo = this.casualNearPoint();
+			NdPoint pointToMoveTo = this.casualNearPoint();
 			this.space.moveTo(t, pointToMoveTo.getX(), 
 								 pointToMoveTo.getY(),
 								 0);
@@ -71,7 +71,7 @@ public class Apple {
 	
 	// this method must improved in the future
 	private NdPoint casualNearPoint(){
-		var gp = this.space.getLocation(this);
+		NdPoint gp = this.space.getLocation(this);
 		return gp;
 	}
 

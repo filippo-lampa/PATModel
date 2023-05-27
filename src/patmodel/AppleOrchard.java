@@ -20,9 +20,12 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	private static final double MIN_DISTANCE_BETWEEN_TREES = 3;
 	private static final double RAINING_NUTRIENTS_TRESHOLD = 0.5;
 	private static final double SUNNY_NUTRIENTS_TRESHOLD = -0.1;
+	
 	private Context<Object> context;
 	private ContinuousSpace<Object> space;
-
+	
+	private TupleSpace tupleSpace;
+	
 	// Daily states
 	private boolean isRaining;
 	private boolean isSunny;
@@ -55,7 +58,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 		ContinuousSpaceFactory spaceFactory = ContinuousSpaceFactoryFinder.createContinuousSpaceFactory(null);
 		this.space = spaceFactory.createContinuousSpace(" space ", context, new RandomCartesianAdder<Object>(),
-				new repast.simphony.space.continuous.InfiniteBorders<>(), 15, 15, 15);
+				new repast.simphony.space.continuous.BouncyBorders(), 15, 15, 15);
 
 		this.context = context;
 
@@ -65,6 +68,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		context.add(soil);
 		space.moveTo(soil, 7.5, 0, 7.5);
 
+		this.tupleSpace = TupleSpace.getInstance();
+		
 		this.isRaining = false;
 		this.isWindy = false;
 		this.isSunny = false;
@@ -116,12 +121,12 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	}
 
 	@ScheduledMethod(start = 1, interval = 1, priority = 2)
-	private void updateSoil() {
+	public void updateSoil() {
 		deltaNutrients();
 	}
 
 	@ScheduledMethod(start = 1, interval = 1, priority = 1)
-	private void updateWeather() {
+	public void updateWeather() {
 		double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
 		this.computeWeather(currentTick);
 		this.updateWindows();
@@ -158,10 +163,10 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param currentTick
 	 */
 	private void computeWeather(double currentTick) {
-		var season = computeSeason(currentTick);
-		var low = new Pair<>(0.0, 0.34);
-		var medium = new Pair<>(0.34, 0.67);
-		var high = new Pair<>(0.67, 1.0);
+		Season season = computeSeason(currentTick);
+		Pair low = new Pair<>(0.0, 0.34);
+		Pair medium = new Pair<>(0.34, 0.67);
+		Pair high = new Pair<>(0.67, 1.0);
 
 		// Computing weather for an event
 		switch (season) {
@@ -198,13 +203,13 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param sun
 	 */
 	private void computeThreshold(Pair<Double, Double> rain, Pair<Double, Double> wind, Pair<Double, Double> sun) {
-		var rainRatio = RANDOM.nextDouble(rain.getFirst(), rain.getSecond());
+		double rainRatio = RANDOM.nextDouble(rain.getFirst(), rain.getSecond());
 		this.rainThreshold = rainRatio - rain.getFirst();
 
-		var windRatio = RANDOM.nextDouble(wind.getFirst(), wind.getSecond());
+		double windRatio = RANDOM.nextDouble(wind.getFirst(), wind.getSecond());
 		this.windThreshold = windRatio - wind.getFirst();
 
-		var sunRatio = RANDOM.nextDouble(sun.getFirst(), sun.getSecond());
+		double sunRatio = RANDOM.nextDouble(sun.getFirst(), sun.getSecond());
 		this.sunThreshold = sunRatio - sun.getFirst();
 	}
 
@@ -213,7 +218,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * applying the weather probability formula.
 	 */
 	private void computeWeatherProbability() {
-		var p = this.getFalseValues(this.rainWindow);
+		int p = this.getFalseValues(this.rainWindow);
 		rain((1 - Math.pow(Math.E, p) / (1 + Math.pow(Math.E, (1 - p)))) > this.rainThreshold);
 
 		p = this.getFalseValues(this.windWindow);
@@ -239,13 +244,21 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 			month = 1;
 		if (month < 1 || month > 12)
 			throw new IllegalArgumentException("time tick: " + currentTick + " generated invalid month: " + month);
-		return switch (month) {
-		case 3, 4, 5 -> Season.SPRING;
-		case 6, 7, 8 -> Season.SUMMER;
-		case 9, 10, 11 -> Season.AUTUMN;
-		case 12, 1, 2 -> Season.WINTER;
-		default -> Season.WINTER;
-		};
+		switch (month) {
+			case 3: return Season.SPRING; 
+			case 4: return Season.SPRING; 
+			case 5: return Season.SPRING; 
+			case 6: return Season.SUMMER; 
+			case 7: return Season.SUMMER; 
+			case 8: return Season.SUMMER; 
+			case 9: return Season.AUTUMN; 
+			case 10: return Season.AUTUMN; 
+			case 11: return Season.AUTUMN; 
+			case 12: return Season.WINTER; 
+			case 1: return Season.WINTER; 
+			case 2: return Season.WINTER; 
+			default: return Season.WINTER; 
+		}
 	}
 
 	private void deltaNutrients() {
