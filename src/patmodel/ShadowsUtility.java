@@ -246,14 +246,15 @@ public final class ShadowsUtility {
 	
 	private static double intersectionAreaTwoCircles(ContinuousSpace<Object> space, Tree tree1, Tree tree2) {
 	    double d = space.getDistance(space.getLocation(tree1), space.getLocation(tree2));
-	    double r1 = tree1.getWidth()/2;
+	    
+	    NdPoint center1 = space.getLocation(tree1);
+		NdPoint center2 = space.getLocation(tree2);
+		double r1 = tree1.getWidth()/2;
 	    double r2 = tree2.getWidth()/2;
+	    NdPoint[] intersectionPoints = findIntersectionPoints(center1, r1, center2, r2);
 	    
-	    double angle1 = Math.acos((Math.pow(r1, 2) + Math.pow(d, 2) - Math.pow(r2, 2)) / (2 * r1 * d));
-	    double angle2 = Math.acos((Math.pow(r2, 2) + Math.pow(d, 2) - Math.pow(r1, 2)) / (2 * r2 * d));
-	    
-	    double circularSegmentArea1 = r1 * r1 * angle1 - r1 * r1 * Math.sin(2 * angle1) / 2;
-	    double circularSegmentArea2 = r2 * r2 * angle2 - r2 * r2 * Math.sin(2 * angle2) / 2;
+	    double circularSegmentArea1 = circularSegmentArea(center1, intersectionPoints[0], intersectionPoints[1], r1);
+	    double circularSegmentArea2 = circularSegmentArea(center2, intersectionPoints[0], intersectionPoints[1], r2);
 	    
 	    return circularSegmentArea1 + circularSegmentArea2;
 	}
@@ -280,16 +281,54 @@ public final class ShadowsUtility {
 	    	throw new NullPointerException("This is not supposed to happen");
 	    }
 	    
-	    //For semplification we consider the area a triangle and just 
-	    //calculate the area using the Shoelace formula
-		area = 0.5 * Math.abs((point1.getX() * (point2.getY() - point3.getY()) 
+	    //calculate the area using the Shoelace formula for the inside triangle
+		double area = 0.5 * Math.abs((point1.getX() * (point2.getY() - point3.getY()) 
 				+ point2.getX() * (point3.getY() - point1.getY()) 
 				+ point3.getX() * (point1.getY() - point2.getY())));
+		
+		//calculate the remaining parts that are not in the triangle
+		area += circularSegmentArea(center1, point1, point3);
+		area += circularSegmentArea(center2, point1, point2);
+		area += circularSegmentArea(center3, point2, point3);
 		
 	    return area;
 	}
 	
 	
+	
+	private static double circularSegmentArea(NdPoint center, NdPoint point1, NdPoint point2) {
+		// Calculate radius
+        double radius = Math.sqrt(Math.pow(center.getX() - point1.getX(), 2) + Math.pow(center.getY() - point1.getY(), 2));
+        
+        return circularSegmentArea(center, point1, point2, radius);
+	}
+	
+	private static double circularSegmentArea(NdPoint center, NdPoint point1, NdPoint point2, double radius) {
+		
+		double centerX = center.getX();
+		double centerY = center.getY();
+		double point1X = point1.getX();
+		double point1Y = point1.getY();
+		double point2X = point2.getX();
+		double point2Y = point2.getY();
+		
+		// Calculate the arc length
+        double centralAngle = Math.acos(((point1X - centerX) * (point2X - centerX) + (point1Y - centerY) * (point2Y - centerY))
+                / (Math.sqrt(Math.pow(point1X - centerX, 2) + Math.pow(point1Y - centerY, 2))
+                * Math.sqrt(Math.pow(point2X - centerX, 2) + Math.pow(point2Y - centerY, 2))));
+        double arcLength = radius * centralAngle;
+        
+        // Calculate the area of the circular sector
+        double sectorArea = 0.5 * Math.pow(radius, 2) * centralAngle;
+        
+        // Calculate the area of the triangle
+        double triangleArea = 0.5 * Math.abs((point1X - centerX) * (point2Y - centerY) - (point2X - centerX) * (point1Y - centerY));
+        
+        // Calculate the area of the circular segment
+        double segmentArea = sectorArea - triangleArea;
+        
+        return segmentArea;
+	}
 	
 	
 	
