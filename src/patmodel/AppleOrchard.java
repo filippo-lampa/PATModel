@@ -2,7 +2,9 @@ package patmodel;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+
 import java.util.Random;
+
 
 import kotlin.Pair;
 import repast.simphony.context.Context;
@@ -67,13 +69,13 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		SoilDesign soil = new SoilDesign();
 		context.add(soil);
 		space.moveTo(soil, 7.5, 0, 7.5);
-
+		
 		this.tupleSpace = TupleSpace.getInstance();
 		
 		this.isRaining = false;
 		this.isWindy = false;
 		this.isSunny = false;
-
+		
 		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
 		this.nutrients = 1;
 		initAgents();
@@ -101,6 +103,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param state
 	 */
 	public void rain(boolean state) {
+		System.out.println("raining");
 		this.isRaining = state;
 	}
 
@@ -108,6 +111,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * Sets the state for the wind phenomenon.
 	 */
 	public void wind(boolean state) {
+		System.out.println("windy");
 		this.isWindy = state;
 	}
 
@@ -117,6 +121,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param state
 	 */
 	public void sun(boolean state) {
+		System.out.println("sunny");
 		this.isSunny = state;
 	}
 

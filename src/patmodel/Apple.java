@@ -47,6 +47,10 @@ public class Apple {
 		this.diameter += 0.1;
 	}	
 
+	public double getIconSize() {
+		return diameter * 1000;
+	}
+	
 	private void becomeTreeOrNutrients() {
 		if(AppleOrchard.RANDOM.nextBoolean()) 
 			this.becomeNutrients();

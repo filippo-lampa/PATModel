@@ -13,13 +13,14 @@ import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.util.ContextUtils;
 import repast.simphony.visualization.visualization3D.style.DefaultStyle3D;
 import repast.simphony.visualizationOGL2D.DefaultStyleOGL2D;
+import repast.simphony.ws.DisplayProperties;
 
 public class Tree extends DefaultStyle3D<Tree>{
-	public static final double BASE_TREE_WIDHT = 1;
-	public static final double BASE_TREE_HEIGHT = 2;
+	public static final double BASE_TREE_WIDHT = 0.01;
+	public static final double BASE_TREE_HEIGHT = 0.02;
 	public static final double BASE_TREE_AGE = 1;
 	public static final int BASE_APPLE_QUANTITY = 10;
-	public static final double BASE_FOLIAGE_DIAMETER = 2;
+	public static final double BASE_FOLIAGE_DIAMETER = 0.02;
 	private final int MAX_AGE = 70*365;
 	private final int MIN_AGE_PRODUCE_APPLE = 2*365;
 	
@@ -52,6 +53,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 		this.soil = soil;
 		//TODO in case implement initial apple creation, note that age matters!!!
 		this.diameter = diameter;
+		
 	}
 	
 	
@@ -113,8 +115,6 @@ public class Tree extends DefaultStyle3D<Tree>{
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 3)
 	public void update() {
-		//test 
-		grow();
 		
 		//Update method is called once per time tick
 		double toGrow = calcNutrientsToGrow();
@@ -150,14 +150,12 @@ public class Tree extends DefaultStyle3D<Tree>{
 		if(width < MAX_WIDTH) width += 0.0001;
 		if(height < MAX_HEIGHT) height += 0.01;
 		if(diameter < MAX_FOLIAGE_DIAMETER) diameter += 0.02;
-		this.getScale(this);
+	}
+    
+	public double getIconSize() {
+		return width * 1000;
 	}
 	
-    @Override
-    public float[] getScale(Tree object) {
-        return new float[]{(float)width,(float)height,(float)diameter};
-    }
-    
 	public double getWidth() {
 		return width;
 	}

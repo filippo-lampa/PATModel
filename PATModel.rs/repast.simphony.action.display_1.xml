@@ -12,7 +12,7 @@
     </entry>
     <entry>
       <string>patmodel.Tree</string>
-      <string>patmodel.Tree</string>
+      <string>repast.simphony.visualization.editedStyle.EditedStyle3D</string>
     </entry>
   </styles>
   <editedStyles>
@@ -39,7 +39,7 @@
     <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>-1325646306</hashCode>
+    <hashCode>30376450</hashCode>
   </schedParams>
   <layoutClassName>foo.bar.baz</layoutClassName>
   <layoutProjection> space </layoutProjection>
