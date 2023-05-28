@@ -7,7 +7,9 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHeight;
 
 import groovyjarjarantlr4.v4.parse.ANTLRParser.finallyClause_return;
 import repast.simphony.context.Context;
+import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
+import repast.simphony.parameter.Parameters;
 import repast.simphony.relogo.ide.dynamics.NetLogoSystemDynamicsParser.intg_return;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.util.ContextUtils;
@@ -21,13 +23,13 @@ public class Tree extends DefaultStyle3D<Tree>{
 	public static final double BASE_TREE_AGE = 1;
 	public static final int BASE_APPLE_QUANTITY = 10;
 	public static final double BASE_FOLIAGE_DIAMETER = 0.02;
-	private final int MAX_AGE = 70*365;
+	private int MAX_AGE = 70*365;
 	private final int MIN_AGE_PRODUCE_APPLE = 2*365;
 	
-	private final int MAX_FOLIAGE_DIAMETER = 4;
-	private final int MAX_HEIGHT = 3;
+	private double MAX_FOLIAGE_DIAMETER = 4;
+	private double MAX_HEIGHT = 3;
 	private final int MAX_APPLE_QUANTITY = 20;
-	private final double MAX_WIDTH = 0.3;
+	private double MAX_WIDTH = 0.3;
 	
 	private double width = 0.0;
 	private double height = 0.0;
@@ -53,6 +55,13 @@ public class Tree extends DefaultStyle3D<Tree>{
 		this.soil = soil;
 		//TODO in case implement initial apple creation, note that age matters!!!
 		this.diameter = diameter;
+		
+		Parameters p = RunEnvironment.getInstance().getParameters();
+		
+		this.MAX_HEIGHT = (double)p.getValue("treeMaxHeight");
+		this.MAX_WIDTH = (double)p.getValue("treeMaxWidth");
+		this.MAX_FOLIAGE_DIAMETER= (double)p.getValue("treeMaxFoliageDiameter");
+		this.MAX_AGE= (int)p.getValue("treeMaxAge");
 		
 	}
 	

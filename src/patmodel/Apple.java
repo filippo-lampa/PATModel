@@ -1,6 +1,8 @@
 package patmodel;
 
+import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
+import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
 import repast.simphony.context.Context;
@@ -9,7 +11,7 @@ public class Apple {
 	// cm
 	private double diameter;
 	// cm
-	private static final double MAX_DIAMETER = 7;
+	private double MAX_DIAMETER = 7;
 	// g/ cm^3
 	private static final double APPLE_DENSITY = 0.75;
 	
@@ -28,7 +30,14 @@ public class Apple {
 		this.context = context;
 		this.orchard = orchard;
 		this.space = space;
+		
+		
+		Parameters p = RunEnvironment.getInstance().getParameters();
+		
+		this.MAX_DIAMETER = (double)p.getValue("appleMaxDiameter");
+		
 		this.grow();
+		
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 4)

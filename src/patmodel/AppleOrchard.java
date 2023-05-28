@@ -19,7 +19,7 @@ import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.RandomCartesianAdder;
 
 public class AppleOrchard extends DefaultContext<Object> implements ContextBuilder<Object> {
-	private static final double MIN_DISTANCE_BETWEEN_TREES = 3;
+	private double MIN_DISTANCE_BETWEEN_TREES = 3;
 	private static final double RAINING_NUTRIENTS_TRESHOLD = 0.5;
 	private static final double SUNNY_NUTRIENTS_TRESHOLD = -0.1;
 	
@@ -64,7 +64,9 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 		this.context = context;
 
-		Parameters p;
+		Parameters p = RunEnvironment.getInstance().getParameters();
+		
+		this.MIN_DISTANCE_BETWEEN_TREES = (double)p.getValue("initialDistanceBetweenTrees");
 
 		SoilDesign soil = new SoilDesign();
 		context.add(soil);
