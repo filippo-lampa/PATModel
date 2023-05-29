@@ -2,20 +2,14 @@ package patmodel;
 
 import java.util.ArrayList;
 
-import org.apache.commons.math3.optim.nonlinear.vector.Weight;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTHeight;
-
-import groovyjarjarantlr4.v4.parse.ANTLRParser.finallyClause_return;
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
-import repast.simphony.relogo.ide.dynamics.NetLogoSystemDynamicsParser.intg_return;
 import repast.simphony.space.continuous.ContinuousSpace;
+import repast.simphony.space.continuous.NdPoint;
 import repast.simphony.util.ContextUtils;
 import repast.simphony.visualization.visualization3D.style.DefaultStyle3D;
-import repast.simphony.visualizationOGL2D.DefaultStyleOGL2D;
-import repast.simphony.ws.DisplayProperties;
 
 public class Tree extends DefaultStyle3D<Tree>{
 	public static final double BASE_TREE_WIDHT = 0.01;
@@ -107,7 +101,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 	}
 	
 	private void die() {
-		Context context = ContextUtils.getContext(this);
+		Context<?> context = ContextUtils.getContext(this);
 		context.remove(this);
 	}
 	
@@ -159,6 +153,8 @@ public class Tree extends DefaultStyle3D<Tree>{
 		if(width < MAX_WIDTH) width += 0.0001;
 		if(height < MAX_HEIGHT) height += 0.01;
 		if(diameter < MAX_FOLIAGE_DIAMETER) diameter += 0.02;
+		NdPoint myLocation = this.space.getLocation(this);
+		this.space.moveTo(this, myLocation.getX(), myLocation.getY() + 0.0001, myLocation.getZ());
 	}
     
 	public double getIconSize() {

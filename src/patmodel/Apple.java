@@ -57,7 +57,7 @@ public class Apple {
 	}	
 
 	public double getIconSize() {
-		return diameter * 1000;
+		return diameter;
 	}
 	
 	private void becomeTreeOrNutrients() {

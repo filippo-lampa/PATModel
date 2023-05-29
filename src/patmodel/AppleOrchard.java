@@ -6,13 +6,14 @@ import java.util.Deque;
 import java.util.Random;
 
 
-import kotlin.Pair;
 import repast.simphony.context.Context;
 import repast.simphony.context.DefaultContext;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactory;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactoryFinder;
 import repast.simphony.dataLoader.ContextBuilder;
 import repast.simphony.engine.environment.RunEnvironment;
+import repast.simphony.engine.schedule.ISchedule;
+import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
@@ -26,7 +27,9 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	private Context<Object> context;
 	private ContinuousSpace<Object> space;
 	
-	private TupleSpace tupleSpace;
+	ISchedule schedule;
+
+	//private TupleSpace tupleSpace;
 	
 	// Daily states
 	private boolean isRaining;
@@ -65,14 +68,14 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		this.context = context;
 
 		Parameters p = RunEnvironment.getInstance().getParameters();
-		
+				
 		this.MIN_DISTANCE_BETWEEN_TREES = (double)p.getValue("initialDistanceBetweenTrees");
 
 		SoilDesign soil = new SoilDesign();
 		context.add(soil);
 		space.moveTo(soil, 7.5, 0, 7.5);
 		
-		this.tupleSpace = TupleSpace.getInstance();
+		//this.tupleSpace = TupleSpace.getInstance();
 		
 		this.isRaining = false;
 		this.isWindy = false;
@@ -81,12 +84,17 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
 		this.nutrients = 1;
 		initAgents();
+	    
+		this.schedule = RunEnvironment.getInstance().getCurrentSchedule();
+	    ScheduleParameters params = ScheduleParameters.createRepeating(1, 1);
+		this.schedule.schedule(params, this, "updateSoil");
+	    this.schedule.schedule(params, this, "updateWeather");
+		    
 		return context;
 	}
 
 	private void initAgents() {
 		// TODO init soil and get height
-		double soilHeight = 1;
 		for (int row = 1; row < this.space.getDimensions().getDepth() / MIN_DISTANCE_BETWEEN_TREES; row++) {
 			for (int column = 1; column < this.space.getDimensions().getWidth()
 					/ MIN_DISTANCE_BETWEEN_TREES; column++) {
@@ -171,9 +179,10 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	private void computeWeather(double currentTick) {
 		Season season = computeSeason(currentTick);
-		Pair low = new Pair<>(0.0, 0.34);
-		Pair medium = new Pair<>(0.34, 0.67);
-		Pair high = new Pair<>(0.67, 1.0);
+		System.out.println(" " + season);
+		Pair<Double, Double> low = new Pair<>(0.0, 0.34);
+		Pair<Double, Double> medium = new Pair<>(0.34, 0.67);
+		Pair<Double, Double> high = new Pair<>(0.67, 1.0);
 
 		// Computing weather for an event
 		switch (season) {
@@ -286,4 +295,23 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	}
 
 	// Until here
+	
+	class Pair <F,S>{
+		
+		private F first;
+		private S second;
+		
+		public Pair(F first, S second) {
+			this.first = first;
+			this.second = second;
+		}
+		
+		public F getFirst() {
+			return this.first;
+		}
+		
+		public S getSecond() {
+			return this.second;
+		}
+	}
 }
