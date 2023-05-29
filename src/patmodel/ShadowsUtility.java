@@ -161,32 +161,6 @@ public final class ShadowsUtility {
         return mergedLists;
     }
 	
-	private static double calculateAreaIntersectionCouplesTree(ContinuousSpace<Object> space, List<List<Tree>> couples, Tree tree) {
-		
-		double totalArea = 0;
-		
-		for(List<Tree> couple : couples) {
-			
-			double a1 = intersectionAreaTwoCircles(space, couple.get(0), tree);
-			double a2 = intersectionAreaTwoCircles(space, couple.get(1), tree);
-			double a3 = circleOverlapTriangleArea(space, couple.get(0), couple.get(1), tree);
-			
-			totalArea += a1 + a2 - a3;
-		}
-		
-		return totalArea;
-	}
-	
-	private static double calculateAreaIntersectionAlonesTree(ContinuousSpace<Object> space, List<Tree> alones,Tree tree) {
-		double totalArea = 0;
-		
-		for(Tree t : alones) {
-			totalArea += intersectionAreaTwoCircles(space, t, tree);
-		}
-		
-		return totalArea;
-	}
-	
 	//-------------------------------------------------------------------------
 	
 	//---------------- Common area calculation ------------------------------
@@ -295,7 +269,6 @@ public final class ShadowsUtility {
 	}
 	
 	
-	
 	private static double circularSegmentArea(NdPoint center, NdPoint point1, NdPoint point2) {
 		// Calculate radius
         double radius = Math.sqrt(Math.pow(center.getX() - point1.getX(), 2) + Math.pow(center.getY() - point1.getY(), 2));
@@ -312,11 +285,10 @@ public final class ShadowsUtility {
 		double point2X = point2.getX();
 		double point2Y = point2.getY();
 		
-		// Calculate the arc length
+		// Calculate the central angle
         double centralAngle = Math.acos(((point1X - centerX) * (point2X - centerX) + (point1Y - centerY) * (point2Y - centerY))
                 / (Math.sqrt(Math.pow(point1X - centerX, 2) + Math.pow(point1Y - centerY, 2))
                 * Math.sqrt(Math.pow(point2X - centerX, 2) + Math.pow(point2Y - centerY, 2))));
-        double arcLength = radius * centralAngle;
         
         // Calculate the area of the circular sector
         double sectorArea = 0.5 * Math.pow(radius, 2) * centralAngle;
@@ -329,9 +301,6 @@ public final class ShadowsUtility {
         
         return segmentArea;
 	}
-	
-	
-	
-	
+
 	
 }
