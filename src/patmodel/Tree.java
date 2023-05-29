@@ -154,11 +154,13 @@ public class Tree extends DefaultStyle3D<Tree>{
 		if(height < MAX_HEIGHT) height += 0.01;
 		if(diameter < MAX_FOLIAGE_DIAMETER) diameter += 0.02;
 		NdPoint myLocation = this.space.getLocation(this);
-		this.space.moveTo(this, myLocation.getX(), myLocation.getY() + 0.0001, myLocation.getZ());
+		if(height < MAX_HEIGHT) { 
+			this.space.moveTo(this, myLocation.getX(), myLocation.getY() + (0.01/15)*16, myLocation.getZ());
+		}
 	}
     
 	public double getIconSize() {
-		return width * 1000;
+		return(height / 15) * 16;
 	}
 	
 	public double getWidth() {

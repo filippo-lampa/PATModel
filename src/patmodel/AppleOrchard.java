@@ -5,7 +5,6 @@ import java.util.Deque;
 
 import java.util.Random;
 
-
 import repast.simphony.context.Context;
 import repast.simphony.context.DefaultContext;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactory;
@@ -23,14 +22,14 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	private double MIN_DISTANCE_BETWEEN_TREES = 3;
 	private static final double RAINING_NUTRIENTS_TRESHOLD = 0.5;
 	private static final double SUNNY_NUTRIENTS_TRESHOLD = -0.1;
-	
+
 	private Context<Object> context;
 	private ContinuousSpace<Object> space;
-	
+
 	ISchedule schedule;
 
-	//private TupleSpace tupleSpace;
-	
+	// private TupleSpace tupleSpace;
+
 	// Daily states
 	private boolean isRaining;
 	private boolean isSunny;
@@ -50,10 +49,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	private double nutrients;
 
-	public static final int TREE_VISUALISATION_Y_OFFSET = 0; // required offset to keep trees stuck to the ground when
-																// scaling is at 1.0
-	public static final double STARTING_TREE_VISUALISATION_Y_OFFSET = 1.7; // required offset to keep trees stuck to the
-																			// ground when scaling is at 1.0
 	public static final double APPLE_NUTRIENT_AMOUNT = 1.5;
 
 	@Override
@@ -68,28 +63,28 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		this.context = context;
 
 		Parameters p = RunEnvironment.getInstance().getParameters();
-				
-		this.MIN_DISTANCE_BETWEEN_TREES = (double)p.getValue("initialDistanceBetweenTrees");
+
+		this.MIN_DISTANCE_BETWEEN_TREES = (double) p.getValue("initialDistanceBetweenTrees");
 
 		SoilDesign soil = new SoilDesign();
 		context.add(soil);
 		space.moveTo(soil, 7.5, 0, 7.5);
-		
-		//this.tupleSpace = TupleSpace.getInstance();
-		
+
+		// this.tupleSpace = TupleSpace.getInstance();
+
 		this.isRaining = false;
 		this.isWindy = false;
 		this.isSunny = false;
-		
+
 		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
 		this.nutrients = 1;
 		initAgents();
-	    
+
 		this.schedule = RunEnvironment.getInstance().getCurrentSchedule();
-	    ScheduleParameters params = ScheduleParameters.createRepeating(1, 1);
+		ScheduleParameters params = ScheduleParameters.createRepeating(1, 1);
 		this.schedule.schedule(params, this, "updateSoil");
-	    this.schedule.schedule(params, this, "updateWeather");
-		    
+		this.schedule.schedule(params, this, "updateWeather");
+
 		return context;
 	}
 
@@ -98,10 +93,9 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		for (int row = 1; row < this.space.getDimensions().getDepth() / MIN_DISTANCE_BETWEEN_TREES; row++) {
 			for (int column = 1; column < this.space.getDimensions().getWidth()
 					/ MIN_DISTANCE_BETWEEN_TREES; column++) {
-				Tree t = new Tree(this.context, this.space, this, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT,
-						Tree.BASE_TREE_AGE, Tree.BASE_FOLIAGE_DIAMETER);
+				Tree t = new Tree(this.context, this.space, this, 0, 0, 0, 0);
 				this.context.add(t);
-				this.space.moveTo(t, column * MIN_DISTANCE_BETWEEN_TREES, STARTING_TREE_VISUALISATION_Y_OFFSET,
+				this.space.moveTo(t, column * MIN_DISTANCE_BETWEEN_TREES, 0,
 						row * MIN_DISTANCE_BETWEEN_TREES);
 			}
 		}
@@ -113,7 +107,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param state
 	 */
 	public void rain(boolean state) {
-		System.out.println("raining");
+		System.out.println("raining: " + state);
 		this.isRaining = state;
 	}
 
@@ -121,7 +115,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * Sets the state for the wind phenomenon.
 	 */
 	public void wind(boolean state) {
-		System.out.println("windy");
+		System.out.println("windy: " + state);
 		this.isWindy = state;
 	}
 
@@ -131,16 +125,14 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param state
 	 */
 	public void sun(boolean state) {
-		System.out.println("sunny");
+		System.out.println("sunny: " + state);
 		this.isSunny = state;
 	}
 
-	@ScheduledMethod(start = 1, interval = 1, priority = 2)
 	public void updateSoil() {
 		deltaNutrients();
 	}
-
-	@ScheduledMethod(start = 1, interval = 1, priority = 1)
+	
 	public void updateWeather() {
 		double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
 		this.computeWeather(currentTick);
@@ -179,7 +171,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	private void computeWeather(double currentTick) {
 		Season season = computeSeason(currentTick);
-		System.out.println(" " + season);
+		System.out.println("Season: " + season);
 		Pair<Double, Double> low = new Pair<>(0.0, 0.34);
 		Pair<Double, Double> medium = new Pair<>(0.34, 0.67);
 		Pair<Double, Double> high = new Pair<>(0.67, 1.0);
@@ -261,19 +253,32 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		if (month < 1 || month > 12)
 			throw new IllegalArgumentException("time tick: " + currentTick + " generated invalid month: " + month);
 		switch (month) {
-			case 3: return Season.SPRING; 
-			case 4: return Season.SPRING; 
-			case 5: return Season.SPRING; 
-			case 6: return Season.SUMMER; 
-			case 7: return Season.SUMMER; 
-			case 8: return Season.SUMMER; 
-			case 9: return Season.AUTUMN; 
-			case 10: return Season.AUTUMN; 
-			case 11: return Season.AUTUMN; 
-			case 12: return Season.WINTER; 
-			case 1: return Season.WINTER; 
-			case 2: return Season.WINTER; 
-			default: return Season.WINTER; 
+		case 3:
+			return Season.SPRING;
+		case 4:
+			return Season.SPRING;
+		case 5:
+			return Season.SPRING;
+		case 6:
+			return Season.SUMMER;
+		case 7:
+			return Season.SUMMER;
+		case 8:
+			return Season.SUMMER;
+		case 9:
+			return Season.AUTUMN;
+		case 10:
+			return Season.AUTUMN;
+		case 11:
+			return Season.AUTUMN;
+		case 12:
+			return Season.WINTER;
+		case 1:
+			return Season.WINTER;
+		case 2:
+			return Season.WINTER;
+		default:
+			return Season.WINTER;
 		}
 	}
 
@@ -295,21 +300,21 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	}
 
 	// Until here
-	
-	class Pair <F,S>{
-		
+
+	class Pair<F, S> {
+
 		private F first;
 		private S second;
-		
+
 		public Pair(F first, S second) {
 			this.first = first;
 			this.second = second;
 		}
-		
+
 		public F getFirst() {
 			return this.first;
 		}
-		
+
 		public S getSecond() {
 			return this.second;
 		}
