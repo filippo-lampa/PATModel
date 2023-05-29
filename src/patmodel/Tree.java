@@ -60,6 +60,25 @@ public class Tree extends DefaultStyle3D<Tree>{
 		
 	}
 	
+	public Tree(Context<Object> context, ContinuousSpace<Object> space, AppleOrchard soil) {
+		this.context = context;
+		this.space = space;
+		this.width = BASE_TREE_WIDHT;
+		this.height = BASE_TREE_HEIGHT;
+		this.age = 0;
+		this.appleList = new ArrayList<>();
+		this.soil = soil;
+		this.diameter = BASE_FOLIAGE_DIAMETER;
+		
+		Parameters p = RunEnvironment.getInstance().getParameters();
+		
+		this.MAX_HEIGHT = (double)p.getValue("treeMaxHeight");
+		this.MAX_WIDTH = (double)p.getValue("treeMaxWidth");
+		this.MAX_FOLIAGE_DIAMETER= (double)p.getValue("treeMaxFoliageDiameter");
+		this.MAX_AGE= (int)p.getValue("treeMaxAge");
+		
+	}
+	
 	
 	private boolean absorbNutrients(double amount) {
 		if (soil.getNutrients()>=amount) {
