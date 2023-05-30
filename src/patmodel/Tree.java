@@ -102,11 +102,11 @@ public class Tree extends DefaultStyle3D<Tree>{
 			this.context.add(newApple);
 			NdPoint thisTreePosition = this.space.getLocation(this);
 			double x = ThreadLocalRandom.current().nextDouble((thisTreePosition.getX() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getX() + this.width / 2) + (this.diameter / 2));
-			double y = 0;
+			double y = ThreadLocalRandom.current().nextDouble((thisTreePosition.getY() + (thisTreePosition.getY() - this.height / 2)) , (thisTreePosition.getY() - this.height / 2) + diameter);
 			double z = ThreadLocalRandom.current().nextDouble((thisTreePosition.getZ() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getZ() + this.width / 2) + (this.diameter / 2));;
 			this.space.moveTo(newApple, x,y,z);
 			double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
-			if(currentTick % 365 >= 274 && currentTick % 365 <= 305) {
+			if((currentTick % 365 >= 274 && currentTick % 365 <= 305) || (currentTick >= 274 && currentTick <= 305)) {
 				this.soil.addOneToTotalApplesInOctober();
 			}
 		}		

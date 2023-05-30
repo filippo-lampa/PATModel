@@ -53,7 +53,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	private double totalApplesInOctober;
 	
-	public static final double APPLE_NUTRIENT_AMOUNT = 1.5;
+	public static final double APPLE_NUTRIENT_AMOUNT = 0.5;
 
 	@Override
 	public Context<Object> build(Context<Object> context) {
@@ -133,6 +133,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void rain(boolean state) {
 		this.isRaining = state;
+		if(state == true)
+			System.out.println("WEATHER: rainy");
 	}
 
 	/**
@@ -140,6 +142,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void wind(boolean state) {
 		this.isWindy = state;
+		if(state == true)
+			System.out.println("WEATHER: windy");
 	}
 
 	/**
@@ -149,6 +153,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void sun(boolean state) {
 		this.isSunny = state;
+		if(state == true)
+			System.out.println("WEATHER: sunny");
 	}
 
 	public void updateSoil() {
@@ -157,7 +163,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	
 	public void updateWeather() {
 		double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
-		if(currentTick % 365 == 305) {
+		if(currentTick % 365 == 305 || currentTick == 305) {
 			this.printTotalNumberOfApplesInOctober();
 			this.totalApplesInOctober = 0;
 		}
