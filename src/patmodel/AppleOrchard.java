@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import repast.simphony.context.Context;
 import repast.simphony.context.DefaultContext;
@@ -77,13 +78,14 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		this.isSunny = false;
 
 		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
-		this.nutrients = 1;
+		//this.nutrients = 1;
 		initAgents();
 
 		this.schedule = RunEnvironment.getInstance().getCurrentSchedule();
-		ScheduleParameters params = ScheduleParameters.createRepeating(1, 1);
-		this.schedule.schedule(params, this, "updateSoil");
-		this.schedule.schedule(params, this, "updateWeather");
+		ScheduleParameters params1 = ScheduleParameters.createRepeating(1, 1, 1);
+		ScheduleParameters params2 = ScheduleParameters.createRepeating(1, 1, 2);
+		this.schedule.schedule(params2, this, "updateSoil");
+		this.schedule.schedule(params1, this, "updateWeather");
 
 		return context;
 	}
@@ -101,6 +103,27 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		}
 	}
 
+	//temporary random weather method waiting for the fix of the stable one
+	private void tempSetWeather() {
+		int randomWeather = ThreadLocalRandom.current().nextInt(0, 3);
+		switch(randomWeather) {
+			case 0: { this.rain(true); 
+					  this.sun(false);
+					  this.wind(false);
+					} break;
+			case 1: { this.rain(false); 
+					  this.sun(true);
+					  this.wind(false);
+					} break;
+			case 2: { this.rain(false); 
+					  this.sun(false);
+					  this.wind(true);
+					} break;
+		}
+		System.out.println("WEATHER: " + randomWeather);
+		System.out.println("NUTRIENTS: " + this.nutrients);
+	}
+	
 	/**
 	 * Sets the state for the rain phenomenon.
 	 * 
@@ -130,13 +153,16 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	}
 
 	public void updateSoil() {
+		System.out.println("NUTRIENTSB4SOILUPDATE: " + this.nutrients);
 		deltaNutrients();
 	}
 	
 	public void updateWeather() {
-		double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		System.out.println("NUTRIENTSB4WEATHERUPDATE: " + this.nutrients);
+		/*double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
 		this.computeWeather(currentTick);
-		this.updateWindows();
+		this.updateWindows();*/
+		this.tempSetWeather();
 	}
 
 	/*
@@ -286,7 +312,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		if (isRaining)
 			nutrients += RAINING_NUTRIENTS_TRESHOLD;
 		else if (isSunny)
-			nutrients += SUNNY_NUTRIENTS_TRESHOLD;
+			if(nutrients + SUNNY_NUTRIENTS_TRESHOLD >= 0)
+				nutrients += SUNNY_NUTRIENTS_TRESHOLD;
 	}
 
 	// TODO from here remove when tuple space will be implemented

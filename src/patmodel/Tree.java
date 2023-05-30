@@ -1,6 +1,7 @@
 package patmodel;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
@@ -62,6 +63,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 	
 	private boolean absorbNutrients(double amount) {
 		if (soil.getNutrients()>=amount) {
+			this.numberOfDaysWithoutNutrients = 0;
 			soil.addNutrients(-amount);
 			return true;
 		}
@@ -88,6 +90,8 @@ public class Tree extends DefaultStyle3D<Tree>{
 	}
 	
 	private double calcNutrientsToSurvive( ) {
+		System.out.println((width * 0.002) + (height * 0.002) + (diameter * 0.001));
+		System.out.println("width: " + width + " height: " + height + " diameter: " + diameter);
 		return (width * 0.002) + (height * 0.002) + (diameter * 0.001);
 	}
 	
@@ -97,6 +101,12 @@ public class Tree extends DefaultStyle3D<Tree>{
 			if(appleList.size() > MAX_APPLE_QUANTITY) // remove additional apples
 				releaseApples(appleList.size() - MAX_APPLE_QUANTITY);
 			appleList.add(newApple);
+			this.context.add(newApple);
+			NdPoint thisTreePosition = this.space.getLocation(this);
+			double x = ThreadLocalRandom.current().nextDouble((thisTreePosition.getX() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getX() + this.width / 2) + (this.diameter / 2));
+			double y = 0;
+			double z = ThreadLocalRandom.current().nextDouble((thisTreePosition.getZ() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getZ() + this.width / 2) + (this.diameter / 2));;
+			this.space.moveTo(newApple, x,y,z);
 		}		
 	}
 	
@@ -106,6 +116,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 	}
 	
 	private void notEnoughNutrients() {
+		System.out.println("Not enough nutrients!");
 		if(appleList.size() > 0) {
 			releaseApples(1);
 		} else if(this.numberOfDaysWithoutNutrients <= this.MAX_DAYS_SURVIVED_WITHOUT_NUTRIENTS){
@@ -143,6 +154,8 @@ public class Tree extends DefaultStyle3D<Tree>{
 			notEnoughNutrients();
 		}
 		age += 1;
+		
+		
 	}
 	
 	private double getSoilNutrientsQuantity() {
@@ -176,6 +189,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 			int index = AppleOrchard.RANDOM.nextInt(appleList.size());
 			Apple toRemove = appleList.get(index);
 			toRemove.fall();
+			this.context.remove(toRemove);
 			appleList.remove(toRemove);
 		}
 	}
