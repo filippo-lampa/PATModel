@@ -90,8 +90,6 @@ public class Tree extends DefaultStyle3D<Tree>{
 	}
 	
 	private double calcNutrientsToSurvive( ) {
-		System.out.println((width * 0.002) + (height * 0.002) + (diameter * 0.001));
-		System.out.println("width: " + width + " height: " + height + " diameter: " + diameter);
 		return (width * 0.002) + (height * 0.002) + (diameter * 0.001);
 	}
 	
@@ -107,6 +105,10 @@ public class Tree extends DefaultStyle3D<Tree>{
 			double y = 0;
 			double z = ThreadLocalRandom.current().nextDouble((thisTreePosition.getZ() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getZ() + this.width / 2) + (this.diameter / 2));;
 			this.space.moveTo(newApple, x,y,z);
+			double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+			if(currentTick % 365 >= 274 && currentTick % 365 <= 305) {
+				this.soil.addOneToTotalApplesInOctober();
+			}
 		}		
 	}
 	
@@ -116,7 +118,6 @@ public class Tree extends DefaultStyle3D<Tree>{
 	}
 	
 	private void notEnoughNutrients() {
-		System.out.println("Not enough nutrients!");
 		if(appleList.size() > 0) {
 			releaseApples(1);
 		} else if(this.numberOfDaysWithoutNutrients <= this.MAX_DAYS_SURVIVED_WITHOUT_NUTRIENTS){

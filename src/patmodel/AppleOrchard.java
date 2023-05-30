@@ -13,6 +13,7 @@ import repast.simphony.context.space.continuous.ContinuousSpaceFactoryFinder;
 import repast.simphony.dataLoader.ContextBuilder;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ISchedule;
+import repast.simphony.engine.schedule.PriorityType;
 import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
@@ -50,6 +51,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	private double nutrients;
 
+	private double totalApplesInOctober;
+	
 	public static final double APPLE_NUTRIENT_AMOUNT = 1.5;
 
 	@Override
@@ -77,6 +80,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		this.isWindy = false;
 		this.isSunny = false;
 
+		this.totalApplesInOctober = 0;
+		
 		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
 		//this.nutrients = 1;
 		initAgents();
@@ -85,8 +90,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		ScheduleParameters params1 = ScheduleParameters.createRepeating(1, 1, 1);
 		ScheduleParameters params2 = ScheduleParameters.createRepeating(1, 1, 2);
 		this.schedule.schedule(params2, this, "updateSoil");
-		this.schedule.schedule(params1, this, "updateWeather");
-
+		this.schedule.schedule(params1, this, "updateWeather");		
 		return context;
 	}
 
@@ -120,8 +124,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 					  this.wind(true);
 					} break;
 		}
-		System.out.println("WEATHER: " + randomWeather);
-		System.out.println("NUTRIENTS: " + this.nutrients);
 	}
 	
 	/**
@@ -130,7 +132,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param state
 	 */
 	public void rain(boolean state) {
-		System.out.println("raining: " + state);
 		this.isRaining = state;
 	}
 
@@ -138,7 +139,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * Sets the state for the wind phenomenon.
 	 */
 	public void wind(boolean state) {
-		System.out.println("windy: " + state);
 		this.isWindy = state;
 	}
 
@@ -148,19 +148,20 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param state
 	 */
 	public void sun(boolean state) {
-		System.out.println("sunny: " + state);
 		this.isSunny = state;
 	}
 
 	public void updateSoil() {
-		System.out.println("NUTRIENTSB4SOILUPDATE: " + this.nutrients);
 		deltaNutrients();
 	}
 	
 	public void updateWeather() {
-		System.out.println("NUTRIENTSB4WEATHERUPDATE: " + this.nutrients);
-		/*double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
-		this.computeWeather(currentTick);
+		double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+		if(currentTick % 365 == 305) {
+			this.printTotalNumberOfApplesInOctober();
+			this.totalApplesInOctober = 0;
+		}
+		/*this.computeWeather(currentTick);
 		this.updateWindows();*/
 		this.tempSetWeather();
 	}
@@ -197,7 +198,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	private void computeWeather(double currentTick) {
 		Season season = computeSeason(currentTick);
-		System.out.println("Season: " + season);
 		Pair<Double, Double> low = new Pair<>(0.0, 0.34);
 		Pair<Double, Double> medium = new Pair<>(0.34, 0.67);
 		Pair<Double, Double> high = new Pair<>(0.67, 1.0);
@@ -315,7 +315,15 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 			if(nutrients + SUNNY_NUTRIENTS_TRESHOLD >= 0)
 				nutrients += SUNNY_NUTRIENTS_TRESHOLD;
 	}
+	
+	public void addOneToTotalApplesInOctober() {
+		this.totalApplesInOctober ++;
+	}
 
+	public void printTotalNumberOfApplesInOctober() {
+		System.out.println("TOTAL APPLES GROWN DURING OCTOBER: " + this.totalApplesInOctober);
+	}
+	
 	// TODO from here remove when tuple space will be implemented
 
 	public void addNutrients(double nutrients) {

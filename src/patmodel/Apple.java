@@ -31,8 +31,6 @@ public class Apple {
 		this.orchard = orchard;
 		this.space = space;
 		
-		System.out.println("apple spawned");
-		
 		Parameters p = RunEnvironment.getInstance().getParameters();
 		
 		this.MAX_DIAMETER = (double)p.getValue("appleMaxDiameter");
