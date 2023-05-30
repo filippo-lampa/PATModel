@@ -6,3 +6,5 @@ public enum Season {
 	SUMMER,
 	AUTUMN;
 }
+
+

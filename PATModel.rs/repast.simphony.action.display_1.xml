@@ -1,4 +1,4 @@
-<repast.simphony.visualization.engine.CartesianDisplayDescriptor simphonyVersion="2.10.0">
+<repast.simphony.visualization.engine.CartesianDisplayDescriptor simphonyVersion="2.9.1">
   <name>AppleOrchard</name>
   <type>3D</type>
   <styles>
@@ -39,7 +39,7 @@
     <pType>LAST</pType>
     <duration>-1.0</duration>
     <frequency>REPEAT</frequency>
-    <hashCode>-1554345192</hashCode>
+    <hashCode>30376450</hashCode>
   </schedParams>
   <layoutClassName>foo.bar.baz</layoutClassName>
   <layoutProjection> space </layoutProjection>

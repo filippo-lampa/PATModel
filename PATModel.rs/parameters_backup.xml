@@ -30,11 +30,6 @@
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
 											/>
-				<parameter name="initialDistanceBetweenTrees" displayName="Initial Distance Between Trees" type="double" 
-						defaultValue="3.0" 
-						isReadOnly="false" 
-						converter="repast.simphony.parameter.StringConverterFactory$DoubleConverter"
-											/>
 		</parameters>
 
 

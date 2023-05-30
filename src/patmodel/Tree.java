@@ -1,6 +1,7 @@
 package patmodel;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
@@ -82,6 +83,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 	
 	private boolean absorbNutrients(double amount) {
 		if (soil.getNutrients()>=amount) {
+			this.numberOfDaysWithoutNutrients = 0;
 			soil.addNutrients(-amount);
 			return true;
 		}
@@ -119,6 +121,16 @@ public class Tree extends DefaultStyle3D<Tree>{
 			if(appleList.size() > MAX_APPLE_QUANTITY) // remove additional apples
 				releaseApples(appleList.size() - MAX_APPLE_QUANTITY);
 			appleList.add(newApple);
+			this.context.add(newApple);
+			NdPoint thisTreePosition = this.space.getLocation(this);
+			double x = ThreadLocalRandom.current().nextDouble((thisTreePosition.getX() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getX() + this.width / 2) + (this.diameter / 2));
+			double y = ThreadLocalRandom.current().nextDouble((thisTreePosition.getY() + (thisTreePosition.getY() - this.height / 2)) , (thisTreePosition.getY() - this.height / 2) + diameter);
+			double z = ThreadLocalRandom.current().nextDouble((thisTreePosition.getZ() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getZ() + this.width / 2) + (this.diameter / 2));;
+			this.space.moveTo(newApple, x,y,z);
+			double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
+			if((currentTick % 365 >= 274 && currentTick % 365 <= 305) || (currentTick >= 274 && currentTick <= 305)) {
+				this.soil.addOneToTotalApplesInOctober();
+			}
 		}		
 	}
 	
@@ -170,6 +182,8 @@ public class Tree extends DefaultStyle3D<Tree>{
 			notEnoughNutrients();
 		}
 		age += 1;
+		
+		
 	}
 	
 	private double getSoilNutrientsQuantity() {
@@ -186,6 +200,13 @@ public class Tree extends DefaultStyle3D<Tree>{
     
 	public double getIconSize() {
 		return width * 1000;
+		if(height < MAX_HEIGHT) { 
+			this.space.moveTo(this, myLocation.getX(), myLocation.getY() + (0.01/15)*16, myLocation.getZ());
+		}
+	}
+    
+	public double getIconSize() {
+		return(height / 15) * 16;
 	}
 	
 	public double getWidth() {
@@ -201,9 +222,9 @@ public class Tree extends DefaultStyle3D<Tree>{
 			int index = AppleOrchard.RANDOM.nextInt(appleList.size());
 			Apple toRemove = appleList.get(index);
 			toRemove.fall();
+			this.context.remove(toRemove);
 			appleList.remove(toRemove);
 		}
 	}
-	
 	
 }
