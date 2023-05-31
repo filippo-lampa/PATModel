@@ -42,7 +42,7 @@ public class Apple {
 	@ScheduledMethod(start = 1, interval = 1, priority = 4)
 	public void update() {
 			this.grow();
-			if(this.diameter == 7)
+			if(this.diameter == MAX_DIAMETER)
 				this.fall();	
 	}
 	
