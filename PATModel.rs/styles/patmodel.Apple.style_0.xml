@@ -1,9 +1,10 @@
 <repast.simphony.visualization.editedStyle.DefaultEditedStyleData3D>
-  <shapeWkt>cube</shapeWkt>
+  <shapeWkt>sphere</shapeWkt>
   <size>0.1</size>
-  <sizeMax>0.1</sizeMax>
+  <sizeMax>1000.0</sizeMax>
   <sizeMin>0.0</sizeMin>
   <sizeScale>1.0</sizeScale>
+  <sizeMethodName>getIconSize</sizeMethodName>
   <label></label>
   <labelPosition>bottom</labelPosition>
   <labelPrecision>3</labelPrecision>
@@ -36,5 +37,4 @@
     <float>1.0</float>
     <float>1.0</float>
   </colorScale>
-  <modelFile3D>./icons/apple.obj</modelFile3D>
 </repast.simphony.visualization.editedStyle.DefaultEditedStyleData3D>
