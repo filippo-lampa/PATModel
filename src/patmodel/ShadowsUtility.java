@@ -123,7 +123,7 @@ public final class ShadowsUtility {
 		
 	}
 	
-	public static List<LinkedList<Tree>> mergeLists(List<LinkedList<Tree>> lists) {
+	private static List<LinkedList<Tree>> mergeLists(List<LinkedList<Tree>> lists) {
         List<LinkedList<Tree>> mergedLists = new ArrayList<LinkedList<Tree>>();
 
         for (LinkedList<Tree> list : lists) {
@@ -161,51 +161,24 @@ public final class ShadowsUtility {
         return mergedLists;
     }
 	
-	private static double calculateAreaIntersectionCouplesTree(ContinuousSpace<Object> space, List<List<Tree>> couples, Tree tree) {
-		
-		double totalArea = 0;
-		
-		for(List<Tree> couple : couples) {
-			
-			double a1 = intersectionAreaTwoCircles(space, couple.get(0), tree);
-			double a2 = intersectionAreaTwoCircles(space, couple.get(1), tree);
-			double a3 = circleOverlapTriangleArea(space, couple.get(0), couple.get(1), tree);
-			
-			totalArea += a1 + a2 - a3;
-		}
-		
-		return totalArea;
-	}
-	
-	private static double calculateAreaIntersectionAlonesTree(ContinuousSpace<Object> space, List<Tree> alones,Tree tree) {
-		double totalArea = 0;
-		
-		for(Tree t : alones) {
-			totalArea += intersectionAreaTwoCircles(space, t, tree);
-		}
-		
-		return totalArea;
-	}
-	
 	//-------------------------------------------------------------------------
 	
 	//---------------- Common area calculation ------------------------------
 	
 	
-	public static boolean hasCommonArea(NdPoint center1, double r1, NdPoint center2, double r2, NdPoint center3, double r3) {
+	private static boolean hasCommonArea(NdPoint center1, double r1, NdPoint center2, double r2, NdPoint center3, double r3) {
         // Find the intersection points of the circles
         NdPoint[] intersections = findIntersectionPoints(center2, r2, center3, r3);
         
-        return isPointInsideCircle(center1, r1, intersections[0]) ||
-                isPointInsideCircle(center1, r1, intersections[1]);
+        return findWitchPointIsInsideCircle(center1, r1, intersections) != null;
     }
 
-    public static boolean isPointInsideCircle(NdPoint center1, double radius1, NdPoint point) {
+    private static boolean isPointInsideCircle(NdPoint center1, double radius1, NdPoint point) {
         double distance1 = Math.sqrt(Math.pow(point.getX() - center1.getX(), 2) + Math.pow(point.getY() - center1.getY(), 2));
         return distance1 <= radius1;
     }
 
-    public static NdPoint[] findIntersectionPoints(NdPoint center1, double r1, NdPoint center2, double r2) {
+    private static NdPoint[] findIntersectionPoints(NdPoint center1, double r1, NdPoint center2, double r2) {
 
         // Calculate the distance between the centers of the two circles
     	double distance = Math.sqrt(Math.pow((center2.getX() - center1.getX()),2) + Math.pow((center2.getY() - center1.getY()),2));
@@ -232,35 +205,102 @@ public final class ShadowsUtility {
 
         // Return the intersection points as an array
         return new NdPoint[]{intersection1, intersection2};
-
     }
+    
+    private static NdPoint findWhichPointIsInsideCircle(NdPoint center1, double r1, NdPoint[] points) {
+    	if(isPointInsideCircle(center1, r1, points[0])) return points[0];
+    	else if(isPointInsideCircle(center1, r1, points[1])) return points[1];
+    	else return null;
+	}
 	
 	//------------------------------------------------
     
     
-    //----------- Math ----------------
+    //----------- Math Area Circles ----------------
 	
 	private static double intersectionAreaTwoCircles(ContinuousSpace<Object> space, Tree tree1, Tree tree2) {
 	    double d = space.getDistance(space.getLocation(tree1), space.getLocation(tree2));
-	    double r1 = tree1.getWidth()/2;
+	    
+	    NdPoint center1 = space.getLocation(tree1);
+		NdPoint center2 = space.getLocation(tree2);
+		double r1 = tree1.getWidth()/2;
 	    double r2 = tree2.getWidth()/2;
+	    NdPoint[] intersectionPoints = findIntersectionPoints(center1, r1, center2, r2);
 	    
-	    double angle1 = Math.acos((Math.pow(r1, 2) + Math.pow(d, 2) - Math.pow(r2, 2)) / (2 * r1 * d));
-	    double segmentArea = r1 * r1 * angle1 - r1 * r1 * Math.sin(2 * angle1) / 2;
-	    double intersectionArea = 2 * segmentArea;
+	    double circularSegmentArea1 = circularSegmentArea(center1, intersectionPoints[0], intersectionPoints[1], r1);
+	    double circularSegmentArea2 = circularSegmentArea(center2, intersectionPoints[0], intersectionPoints[1], r2);
 	    
-	    return intersectionArea;
+	    return circularSegmentArea1 + circularSegmentArea2;
 	}
 	
 	
 	private static double circleOverlapTriangleArea(ContinuousSpace<Object> space, Tree tree1, Tree tree2, Tree tree3) {
-		double d12 = space.getDistance(space.getLocation(tree1), space.getLocation(tree2));
-		double d23 = space.getDistance(space.getLocation(tree2), space.getLocation(tree3));
-		double d31 = space.getDistance(space.getLocation(tree3), space.getLocation(tree1));
-
-	    double s = (d12 + d23 + d31) / 2;
-	    double areaTri = Math.sqrt(s * (s - d12) * (s - d23) * (s - d31));
-
-	    return areaTri;
+		
+		NdPoint center1 = space.getLocation(tree1);
+		NdPoint center2 = space.getLocation(tree2);
+		NdPoint center3 = space.getLocation(tree3);
+		double r1 = tree1.getWidth()/2;
+	    double r2 = tree2.getWidth()/2;
+	    double r3 = tree3.getWidth()/2;
+		
+	    NdPoint[] intersectionPoints12 = findIntersectionPoints(center1, r1, center2, r2);
+	    NdPoint[] intersectionPoints23 = findIntersectionPoints(center2, r2, center3, r3);
+	    NdPoint[] intersectionPoints31 = findIntersectionPoints(center3, r3, center1, r1);
+		
+	    NdPoint point1 = findWitchPointIsInsideCircle(center3, r3, intersectionPoints12);
+	    NdPoint point2 = findWitchPointIsInsideCircle(center1, r1, intersectionPoints23);
+	    NdPoint point3 = findWitchPointIsInsideCircle(center2, r2, intersectionPoints31);
+		
+	    if(point1 == null || point2 == null || point3 == null) {
+	    	throw new NullPointerException("This is not supposed to happen");
+	    }
+	    
+	    //calculate the area using the Shoelace formula for the inside triangle
+		double area = 0.5 * Math.abs((point1.getX() * (point2.getY() - point3.getY()) 
+				+ point2.getX() * (point3.getY() - point1.getY()) 
+				+ point3.getX() * (point1.getY() - point2.getY())));
+		
+		//calculate the remaining parts that are not in the triangle
+		area += circularSegmentArea(center1, point1, point3);
+		area += circularSegmentArea(center2, point1, point2);
+		area += circularSegmentArea(center3, point2, point3);
+		
+	    return area;
 	}
+	
+	
+	private static double circularSegmentArea(NdPoint center, NdPoint point1, NdPoint point2) {
+		// Calculate radius
+        double radius = Math.sqrt(Math.pow(center.getX() - point1.getX(), 2) + Math.pow(center.getY() - point1.getY(), 2));
+        
+        return circularSegmentArea(center, point1, point2, radius);
+	}
+	
+	private static double circularSegmentArea(NdPoint center, NdPoint point1, NdPoint point2, double radius) {
+		
+		double centerX = center.getX();
+		double centerY = center.getY();
+		double point1X = point1.getX();
+		double point1Y = point1.getY();
+		double point2X = point2.getX();
+		double point2Y = point2.getY();
+		
+		// Calculate the central angle
+        double centralAngle = Math.acos(((point1X - centerX) * (point2X - centerX) + (point1Y - centerY) * (point2Y - centerY))
+                / (Math.sqrt(Math.pow(point1X - centerX, 2) + Math.pow(point1Y - centerY, 2))
+                * Math.sqrt(Math.pow(point2X - centerX, 2) + Math.pow(point2Y - centerY, 2))));
+        
+        // Calculate the area of the circular sector
+        double sectorArea = 0.5 * Math.pow(radius, 2) * centralAngle;
+        
+        // Calculate the area of the triangle
+        double triangleArea = 0.5 * Math.abs((point1X - centerX) * (point2Y - centerY) - (point2X - centerX) * (point1Y - centerY));
+        
+        // Calculate the area of the circular segment
+        double segmentArea = sectorArea - triangleArea;
+        
+        return segmentArea;
+	}
+
+	
 }
