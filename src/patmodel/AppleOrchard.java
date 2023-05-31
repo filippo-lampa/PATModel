@@ -1,8 +1,14 @@
 package patmodel;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -24,7 +30,13 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	private double MIN_DISTANCE_BETWEEN_TREES = 3;
 	private static final double RAINING_NUTRIENTS_TRESHOLD = 0.5;
 	private static final double SUNNY_NUTRIENTS_TRESHOLD = -0.1;
-
+	private static final int DAYS_IN_A_YEAR = 365;
+	private static final int DAYS_IN_A_MONTH = 30;
+	private static final double BONUS_AMOUNT = 0.1;
+	private static final double MALUS_AMOUNT = 0.2;
+	public static final double APPLE_NUTRIENT_AMOUNT = 0.5;
+	public static final Random RANDOM = new Random();
+	
 	private Context<Object> context;
 	private ContinuousSpace<Object> space;
 
@@ -32,29 +44,31 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	// private TupleSpace tupleSpace;
 
-	// Daily states
 	private boolean isRaining;
 	private boolean isSunny;
 	private boolean isWindy;
-
-	// Arrays weather history: max 30 days
-	private Deque<Boolean> sunWindow = new ArrayDeque<>();
-	private Deque<Boolean> rainWindow = new ArrayDeque<>();
-	private Deque<Boolean> windWindow = new ArrayDeque<>();
-
-	// Thresholds
-	private double rainThreshold;
-	private double windThreshold;
-	private double sunThreshold;
-
-	public static final Random RANDOM = new Random();
+	
+	private int consecutiveNonWindyDays = 0;
+	private int consecutiveNonSunnyDays = 0;
+	private int consecutiveNonRainyDays = 0;
+	
+	private int consecutiveWindyDays = 0;
+	private int consecutiveSunnyDays = 0;
+	private int consecutiveRainyDays = 0;
+	
+	private int windyDaysInAMonth = 0;
+	private int sunnyDaysInAMonth = 0;
+	private int rainyDaysInAMonth = 0;
+	
+	//History arrays
+	private ArrayList<boolean[]> historyWinter = new ArrayList<boolean[]>();
+	private ArrayList<boolean[]> historySpring = new ArrayList<boolean[]>();
+	private ArrayList<boolean[]> historySummer = new ArrayList<boolean[]>();
+	private ArrayList<boolean[]> historyAutumn = new ArrayList<boolean[]>();
 
 	private double nutrients;
-
 	private double totalApplesInOctober;
 	
-	public static final double APPLE_NUTRIENT_AMOUNT = 0.5;
-
 	@Override
 	public Context<Object> build(Context<Object> context) {
 
@@ -80,6 +94,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		this.isWindy = false;
 		this.isSunny = false;
 
+		this.nutrients = 3;
+		
 		this.totalApplesInOctober = 0;
 		
 		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
@@ -107,24 +123,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		}
 	}
 
-	//temporary random weather method waiting for the fix of the stable one
-	private void tempSetWeather() {
-		int randomWeather = ThreadLocalRandom.current().nextInt(0, 3);
-		switch(randomWeather) {
-			case 0: { this.rain(true); 
-					  this.sun(false);
-					  this.wind(false);
-					} break;
-			case 1: { this.rain(false); 
-					  this.sun(true);
-					  this.wind(false);
-					} break;
-			case 2: { this.rain(false); 
-					  this.sun(false);
-					  this.wind(true);
-					} break;
-		}
-	}
 	
 	/**
 	 * Sets the state for the rain phenomenon.
@@ -133,8 +131,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void rain(boolean state) {
 		this.isRaining = state;
-		if(state == true)
-			System.out.println("WEATHER: rainy");
 	}
 
 	/**
@@ -142,8 +138,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void wind(boolean state) {
 		this.isWindy = state;
-		if(state == true)
-			System.out.println("WEATHER: windy");
 	}
 
 	/**
@@ -153,120 +147,155 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void sun(boolean state) {
 		this.isSunny = state;
-		if(state == true)
-			System.out.println("WEATHER: sunny");
 	}
 
 	public void updateSoil() {
 		deltaNutrients();
 	}
 	
+	/*
+	 * Manages the update of the weather at each timetick 
+	 */
 	public void updateWeather() {
 		double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
-		if(currentTick % 365 == 305 || currentTick == 305) {
+		if(currentTick % DAYS_IN_A_YEAR == 300 || currentTick == 300) {
 			this.printTotalNumberOfApplesInOctober();
 			this.totalApplesInOctober = 0;
 		}
-		/*this.computeWeather(currentTick);
-		this.updateWindows();*/
-		this.tempSetWeather();
-	}
-
-	/*
-	 * Slides and updates the rain, wind and sun time windows.
-	 */
-	private void updateWindows() {
-		if (this.rainWindow.size() == 30)
-			this.rainWindow.pop();
-		this.rainWindow.add(this.isRaining);
-
-		if (this.windWindow.size() == 30)
-			this.windWindow.pop();
-		this.windWindow.add(this.isWindy);
-
-		if (this.sunWindow.size() == 30)
-			this.sunWindow.pop();
-		this.sunWindow.add(this.isSunny);
-	}
-
-	/*
-	 * Returns the number of values where a phenomenon did not happen, then the
-	 * number of false values.
-	 */
-	private int getFalseValues(Deque<Boolean> deque) {
-		return (int) deque.stream().filter(v -> v == false).count();
+		this.computeWeather(currentTick);
 	}
 
 	/*
 	 * Computes the corresponding weather based on the given current tick.
+	 * The weather is computed by referring to a real dataset of what was the weather in
+	 * Macerata Marche in 2021-2022
 	 * 
 	 * @param currentTick
 	 */
 	private void computeWeather(double currentTick) {
-		Season season = computeSeason(currentTick);
-		Pair<Double, Double> low = new Pair<>(0.0, 0.34);
-		Pair<Double, Double> medium = new Pair<>(0.34, 0.67);
-		Pair<Double, Double> high = new Pair<>(0.67, 1.0);
+		if(currentTick == 1) {
+			String line;
+			//if this is the first time load the dataset.
+		  try (BufferedReader br = new BufferedReader(new FileReader("./src/data/dataset_simplified.csv"))) {
+	            while ((line = br.readLine()) != null) {
+	                String[] data = line.split(",");
+	                boolean[] weatherInfo = new boolean[3];
+	                for(int i = 1; i < data.length; i++) {
+	                	weatherInfo[i-1] = data[i].equals("1");
+	                }
+	                switch(Integer.parseInt(data[0])) {
+                		case 0: 
+                			historyWinter.add(weatherInfo);
+                			break;
+                		case 1:
+                			historySpring.add(weatherInfo);
+                			break;
+                		case 2:
+                			historySummer.add(weatherInfo);
+                			break;
+                		case 3:
+                			historyAutumn.add(weatherInfo);
+                			break;
+	                }
+	            }
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }		  
+		}
 
-		// Computing weather for an event
+		// Get the current season and compute weather.
+		Season season = computeSeason(currentTick);
 		switch (season) {
 		case WINTER:
-			// high rain, mid wind, low sun
-			computeThreshold(high, medium, low);
+			generateRandomDays(historyWinter);
 			break;
 		case SPRING:
-			// low rain, mid wind, mid sun
-			computeThreshold(low, medium, medium);
+			generateRandomDays(historySpring);
 			break;
 		case SUMMER:
-			// low rain, low wind, high sun
-			computeThreshold(low, low, high);
+			generateRandomDays(historySummer);
 			break;
 		case AUTUMN:
-			// high rain, high wind, low sun
-			computeThreshold(high, high, low);
+			generateRandomDays(historyAutumn);
 			break;
 		}
-		computeWeatherProbability();
-	}
+		
+		// Compute monthly rates
+		double windyMonthlyRate = 0.0;
+		double sunnyMonthlyRate = 0.0;
+		double rainyMonthlyRate = 0.0;
+		
+		if(this.windyDaysInAMonth != 0) {
+			windyMonthlyRate = (double) windyDaysInAMonth / (double) DAYS_IN_A_MONTH;
+		}
+		if(this.sunnyDaysInAMonth != 0) {
+			sunnyMonthlyRate = (double) sunnyDaysInAMonth / (double) DAYS_IN_A_MONTH;
 
+		}
+		if(this.rainyDaysInAMonth != 0) {
+			rainyMonthlyRate = (double) rainyDaysInAMonth / (double) DAYS_IN_A_MONTH;
+		}
+		
+		//Compute decision
+		boolean shouldWind = computeProbability(windyMonthlyRate, consecutiveNonWindyDays, consecutiveWindyDays);
+		boolean shouldSun = computeProbability(sunnyMonthlyRate, consecutiveNonSunnyDays, consecutiveSunnyDays);
+		boolean shouldRain = computeProbability(rainyMonthlyRate, consecutiveNonRainyDays, consecutiveRainyDays);
+		
+		//If no rain or no sun, choose one randomly.
+		if(shouldSun == false && shouldRain == false) {
+			boolean defaultDecision = RANDOM.nextBoolean();
+			sun(defaultDecision);
+			rain(!defaultDecision);
+		}
+		else {
+			sun(shouldSun);
+			rain(shouldRain);	
+		}
+		wind(shouldWind);
+
+		//update consecutive days
+		this.consecutiveNonWindyDays = shouldWind ? 0 : this.consecutiveNonWindyDays + 1;
+		this.consecutiveNonSunnyDays = shouldSun ? 0 : this.consecutiveNonSunnyDays + 1;
+		this.consecutiveNonRainyDays = shouldRain ? 0 : this.consecutiveNonRainyDays + 1;
+		
+		this.consecutiveWindyDays = shouldWind ? this.consecutiveWindyDays + 1 : 0;
+		this.consecutiveSunnyDays = shouldSun ? this.consecutiveSunnyDays + 1 : 0;
+		this.consecutiveRainyDays = shouldRain ? this.consecutiveRainyDays + 1 : 0;
+	}
+	
 	/*
-	 * Computes and sets the weather thresholds depending on the minimum and maximum
-	 * ratio values for the rain, wind and sun. Each parameter is defined as a
-	 * {@link Pair} that has as first the minimum value and as second the maximum
-	 * value of the phenomenon.
-	 * 
-	 * @param rain
-	 * 
-	 * @param wind
-	 * 
-	 * @param sun
+	 * Computes the probability of an event given the rate of it, the consecutive and non consecutive amount of days
 	 */
-	private void computeThreshold(Pair<Double, Double> rain, Pair<Double, Double> wind, Pair<Double, Double> sun) {
-		double rainRatio = RANDOM.nextDouble(rain.getFirst(), rain.getSecond());
-		this.rainThreshold = rainRatio - rain.getFirst();
-
-		double windRatio = RANDOM.nextDouble(wind.getFirst(), wind.getSecond());
-		this.windThreshold = windRatio - wind.getFirst();
-
-		double sunRatio = RANDOM.nextDouble(sun.getFirst(), sun.getSecond());
-		this.sunThreshold = sunRatio - sun.getFirst();
+	private boolean computeProbability(double rateOfEvent, double consecutiveNonDays, double consecutiveDays) {
+        Random random = new Random();
+        double randomDouble = random.nextDouble();
+        double bonus = consecutiveNonDays * BONUS_AMOUNT;
+        double malus = consecutiveDays * MALUS_AMOUNT;
+        double cumulativeProbabilityOfEvent = rateOfEvent + bonus - malus;
+        return randomDouble <= cumulativeProbabilityOfEvent;
+    }
+	
+	// Pick 30 days of a specific season and save the windy,sunny and rainy ones
+	private void generateRandomDays(ArrayList<boolean[]> historySeason) {
+		this.windyDaysInAMonth = 0;
+		this.sunnyDaysInAMonth = 0;
+		this.rainyDaysInAMonth = 0;
+		for(int i = 0; i < DAYS_IN_A_MONTH; i++) {
+			int maxSize = historySeason.size();
+			int randomIndex = RANDOM.nextInt(maxSize);
+			boolean[] pickedDay = historySeason.get(randomIndex);
+			if(pickedDay[0]) {
+				this.windyDaysInAMonth = this.windyDaysInAMonth + 1;
+			}
+			if(pickedDay[1]) {
+				this.sunnyDaysInAMonth = this.sunnyDaysInAMonth + 1;
+			}
+			if(pickedDay[2]) {
+				this.rainyDaysInAMonth = this.rainyDaysInAMonth + 1;
+			}
+		}
 	}
-
-	/*
-	 * Computes and sets the final daily states of rain, wind and sun phenomenon
-	 * applying the weather probability formula.
-	 */
-	private void computeWeatherProbability() {
-		int p = this.getFalseValues(this.rainWindow);
-		rain((1 - Math.pow(Math.E, p) / (1 + Math.pow(Math.E, (1 - p)))) > this.rainThreshold);
-
-		p = this.getFalseValues(this.windWindow);
-		wind((1 - Math.pow(Math.E, p) / (1 + Math.pow(Math.E, (1 - p)))) > this.windThreshold);
-
-		p = this.getFalseValues(this.sunWindow);
-		sun((1 - Math.pow(Math.E, p) / (1 + Math.pow(Math.E, (1 - p)))) > this.sunThreshold);
-	}
+	
 
 	/*
 	 * Computes the corresponding season given the the current tick as a {@code
@@ -278,7 +307,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	private Season computeSeason(double currentTick) {
 		// Computes the month
-		int month = (int) ((currentTick % 366) / 30);
+		int month = (int) ((currentTick % DAYS_IN_A_YEAR) / DAYS_IN_A_MONTH);
 		if (month == 0)
 			// case day 1, aka time tick 0
 			month = 1;
@@ -340,24 +369,4 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		return nutrients;
 	}
 
-	// Until here
-
-	class Pair<F, S> {
-
-		private F first;
-		private S second;
-
-		public Pair(F first, S second) {
-			this.first = first;
-			this.second = second;
-		}
-
-		public F getFirst() {
-			return this.first;
-		}
-
-		public S getSecond() {
-			return this.second;
-		}
-	}
 }
