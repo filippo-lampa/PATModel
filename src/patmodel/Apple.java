@@ -1,6 +1,8 @@
 package patmodel;
 
+import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
+import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
 import repast.simphony.context.Context;
@@ -9,7 +11,7 @@ public class Apple {
 	// cm
 	private double diameter;
 	// cm
-	private static final double MAX_DIAMETER = 7;
+	private double MAX_DIAMETER = 7;
 	// g/ cm^3
 	private static final double APPLE_DENSITY = 0.75;
 	
@@ -28,13 +30,19 @@ public class Apple {
 		this.context = context;
 		this.orchard = orchard;
 		this.space = space;
+		
+		Parameters p = RunEnvironment.getInstance().getParameters();
+		
+		this.MAX_DIAMETER = (double)p.getValue("appleMaxDiameter");
+		
 		this.grow();
+		
 	}
 	
 	@ScheduledMethod(start = 1, interval = 1, priority = 4)
-	private void update() {
+	public void update() {
 			this.grow();
-			if(this.diameter == 7)
+			if(this.diameter == MAX_DIAMETER)
 				this.fall();	
 	}
 	
@@ -47,6 +55,10 @@ public class Apple {
 		this.diameter += 0.1;
 	}	
 
+	public double getIconSize() {
+		return diameter;
+	}
+	
 	private void becomeTreeOrNutrients() {
 		if(AppleOrchard.RANDOM.nextBoolean()) 
 			this.becomeNutrients();
@@ -62,7 +74,7 @@ public class Apple {
 		if(this.isFallen) {
 			Tree t = new Tree(this.context, this.space, this.orchard, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT, Tree.BASE_TREE_AGE, Tree.BASE_FOLIAGE_DIAMETER);
 			this.context.add(t);
-			var pointToMoveTo = this.casualNearPoint();
+			NdPoint pointToMoveTo = this.casualNearPoint();
 			this.space.moveTo(t, pointToMoveTo.getX(), 
 								 pointToMoveTo.getY(),
 								 0);
@@ -71,7 +83,7 @@ public class Apple {
 	
 	// this method must improved in the future
 	private NdPoint casualNearPoint(){
-		var gp = this.space.getLocation(this);
+		NdPoint gp = this.space.getLocation(this);
 		return gp;
 	}
 
