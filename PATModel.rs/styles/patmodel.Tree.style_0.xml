@@ -1,9 +1,10 @@
 <repast.simphony.visualization.editedStyle.DefaultEditedStyleData3D>
   <shapeWkt>sphere</shapeWkt>
   <size>0.1</size>
-  <sizeMax>0.1</sizeMax>
+  <sizeMax>15.0</sizeMax>
   <sizeMin>0.0</sizeMin>
   <sizeScale>1.0</sizeScale>
+  <sizeMethodName>getIconSize</sizeMethodName>
   <label></label>
   <labelPosition>bottom</labelPosition>
   <labelPrecision>3</labelPrecision>

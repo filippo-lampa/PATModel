@@ -2,26 +2,35 @@ package patmodel;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Random;
 
-import kotlin.Pair;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
 import repast.simphony.context.Context;
 import repast.simphony.context.DefaultContext;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactory;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactoryFinder;
 import repast.simphony.dataLoader.ContextBuilder;
 import repast.simphony.engine.environment.RunEnvironment;
+import repast.simphony.engine.schedule.ISchedule;
+import repast.simphony.engine.schedule.PriorityType;
+import repast.simphony.engine.schedule.ScheduleParameters;
 import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.RandomCartesianAdder;
 
 public class AppleOrchard extends DefaultContext<Object> implements ContextBuilder<Object> {
-	private static final double MIN_DISTANCE_BETWEEN_TREES = 3;
+	private double MIN_DISTANCE_BETWEEN_TREES = 3;
 	private static final double RAINING_NUTRIENTS_TRESHOLD = 0.5;
 	private static final double SUNNY_NUTRIENTS_TRESHOLD = -0.1;
+
 	private Context<Object> context;
 	private ContinuousSpace<Object> space;
+
+	ISchedule schedule;
+
+	// private TupleSpace tupleSpace;
 
 	// Daily states
 	private boolean isRaining;
@@ -42,11 +51,9 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	private double nutrients;
 
-	public static final int TREE_VISUALISATION_Y_OFFSET = 0; // required offset to keep trees stuck to the ground when
-																// scaling is at 1.0
-	public static final double STARTING_TREE_VISUALISATION_Y_OFFSET = 1.7; // required offset to keep trees stuck to the
-																			// ground when scaling is at 1.0
-	public static final double APPLE_NUTRIENT_AMOUNT = 1.5;
+	private double totalApplesInOctober;
+	
+	public static final double APPLE_NUTRIENT_AMOUNT = 0.5;
 
 	@Override
 	public Context<Object> build(Context<Object> context) {
@@ -55,41 +62,70 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 		ContinuousSpaceFactory spaceFactory = ContinuousSpaceFactoryFinder.createContinuousSpaceFactory(null);
 		this.space = spaceFactory.createContinuousSpace(" space ", context, new RandomCartesianAdder<Object>(),
-				new repast.simphony.space.continuous.InfiniteBorders<>(), 15, 15, 15);
+				new repast.simphony.space.continuous.BouncyBorders(), 15, 15, 15);
 
 		this.context = context;
 
-		Parameters p;
+		Parameters p = RunEnvironment.getInstance().getParameters();
+
+		this.MIN_DISTANCE_BETWEEN_TREES = (double) p.getValue("initialDistanceBetweenTrees");
 
 		SoilDesign soil = new SoilDesign();
 		context.add(soil);
 		space.moveTo(soil, 7.5, 0, 7.5);
 
+		// this.tupleSpace = TupleSpace.getInstance();
+
 		this.isRaining = false;
 		this.isWindy = false;
 		this.isSunny = false;
 
+		this.totalApplesInOctober = 0;
+		
 		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
-		this.nutrients = 1;
+		//this.nutrients = 1;
 		initAgents();
+
+		this.schedule = RunEnvironment.getInstance().getCurrentSchedule();
+		ScheduleParameters params1 = ScheduleParameters.createRepeating(1, 1, 1);
+		ScheduleParameters params2 = ScheduleParameters.createRepeating(1, 1, 2);
+		this.schedule.schedule(params2, this, "updateSoil");
+		this.schedule.schedule(params1, this, "updateWeather");		
 		return context;
 	}
 
 	private void initAgents() {
 		// TODO init soil and get height
-		double soilHeight = 1;
 		for (int row = 1; row < this.space.getDimensions().getDepth() / MIN_DISTANCE_BETWEEN_TREES; row++) {
 			for (int column = 1; column < this.space.getDimensions().getWidth()
 					/ MIN_DISTANCE_BETWEEN_TREES; column++) {
-				Tree t = new Tree(this.context, this.space, this, Tree.BASE_TREE_WIDHT, Tree.BASE_TREE_HEIGHT,
-						Tree.BASE_TREE_AGE, Tree.BASE_FOLIAGE_DIAMETER);
+				Tree t = new Tree(this.context, this.space, this, 0, 0, 0, 0);
 				this.context.add(t);
-				this.space.moveTo(t, column * MIN_DISTANCE_BETWEEN_TREES, STARTING_TREE_VISUALISATION_Y_OFFSET,
+				this.space.moveTo(t, column * MIN_DISTANCE_BETWEEN_TREES, 0,
 						row * MIN_DISTANCE_BETWEEN_TREES);
 			}
 		}
 	}
 
+	//temporary random weather method waiting for the fix of the stable one
+	private void tempSetWeather() {
+		int randomWeather = ThreadLocalRandom.current().nextInt(0, 3);
+		switch(randomWeather) {
+			case 0: { this.rain(true); 
+					  this.sun(false);
+					  this.wind(false);
+					} break;
+			case 1: { this.rain(false); 
+					  this.sun(true);
+					  this.wind(false);
+					} break;
+			case 2: { this.rain(false); 
+					  this.sun(false);
+					  this.wind(true);
+					} break;
+		}
+	}
+	
 	/**
 	 * Sets the state for the rain phenomenon.
 	 * 
@@ -97,6 +133,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void rain(boolean state) {
 		this.isRaining = state;
+		if(state == true)
+			System.out.println("WEATHER: rainy");
 	}
 
 	/**
@@ -104,6 +142,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void wind(boolean state) {
 		this.isWindy = state;
+		if(state == true)
+			System.out.println("WEATHER: windy");
 	}
 
 	/**
@@ -113,18 +153,23 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void sun(boolean state) {
 		this.isSunny = state;
+		if(state == true)
+			System.out.println("WEATHER: sunny");
 	}
 
-	@ScheduledMethod(start = 1, interval = 1, priority = 2)
-	private void updateSoil() {
+	public void updateSoil() {
 		deltaNutrients();
 	}
-
-	@ScheduledMethod(start = 1, interval = 1, priority = 1)
-	private void updateWeather() {
+	
+	public void updateWeather() {
 		double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
-		this.computeWeather(currentTick);
-		this.updateWindows();
+		if(currentTick % 365 == 305 || currentTick == 305) {
+			this.printTotalNumberOfApplesInOctober();
+			this.totalApplesInOctober = 0;
+		}
+		/*this.computeWeather(currentTick);
+		this.updateWindows();*/
+		this.tempSetWeather();
 	}
 
 	/*
@@ -158,10 +203,10 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param currentTick
 	 */
 	private void computeWeather(double currentTick) {
-		var season = computeSeason(currentTick);
-		var low = new Pair<>(0.0, 0.34);
-		var medium = new Pair<>(0.34, 0.67);
-		var high = new Pair<>(0.67, 1.0);
+		Season season = computeSeason(currentTick);
+		Pair<Double, Double> low = new Pair<>(0.0, 0.34);
+		Pair<Double, Double> medium = new Pair<>(0.34, 0.67);
+		Pair<Double, Double> high = new Pair<>(0.67, 1.0);
 
 		// Computing weather for an event
 		switch (season) {
@@ -198,13 +243,13 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * @param sun
 	 */
 	private void computeThreshold(Pair<Double, Double> rain, Pair<Double, Double> wind, Pair<Double, Double> sun) {
-		var rainRatio = RANDOM.nextDouble(rain.getFirst(), rain.getSecond());
+		double rainRatio = RANDOM.nextDouble(rain.getFirst(), rain.getSecond());
 		this.rainThreshold = rainRatio - rain.getFirst();
 
-		var windRatio = RANDOM.nextDouble(wind.getFirst(), wind.getSecond());
+		double windRatio = RANDOM.nextDouble(wind.getFirst(), wind.getSecond());
 		this.windThreshold = windRatio - wind.getFirst();
 
-		var sunRatio = RANDOM.nextDouble(sun.getFirst(), sun.getSecond());
+		double sunRatio = RANDOM.nextDouble(sun.getFirst(), sun.getSecond());
 		this.sunThreshold = sunRatio - sun.getFirst();
 	}
 
@@ -213,7 +258,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 * applying the weather probability formula.
 	 */
 	private void computeWeatherProbability() {
-		var p = this.getFalseValues(this.rainWindow);
+		int p = this.getFalseValues(this.rainWindow);
 		rain((1 - Math.pow(Math.E, p) / (1 + Math.pow(Math.E, (1 - p)))) > this.rainThreshold);
 
 		p = this.getFalseValues(this.windWindow);
@@ -239,22 +284,52 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 			month = 1;
 		if (month < 1 || month > 12)
 			throw new IllegalArgumentException("time tick: " + currentTick + " generated invalid month: " + month);
-		return switch (month) {
-		case 3, 4, 5 -> Season.SPRING;
-		case 6, 7, 8 -> Season.SUMMER;
-		case 9, 10, 11 -> Season.AUTUMN;
-		case 12, 1, 2 -> Season.WINTER;
-		default -> Season.WINTER;
-		};
+		switch (month) {
+		case 3:
+			return Season.SPRING;
+		case 4:
+			return Season.SPRING;
+		case 5:
+			return Season.SPRING;
+		case 6:
+			return Season.SUMMER;
+		case 7:
+			return Season.SUMMER;
+		case 8:
+			return Season.SUMMER;
+		case 9:
+			return Season.AUTUMN;
+		case 10:
+			return Season.AUTUMN;
+		case 11:
+			return Season.AUTUMN;
+		case 12:
+			return Season.WINTER;
+		case 1:
+			return Season.WINTER;
+		case 2:
+			return Season.WINTER;
+		default:
+			return Season.WINTER;
+		}
 	}
 
 	private void deltaNutrients() {
 		if (isRaining)
 			nutrients += RAINING_NUTRIENTS_TRESHOLD;
 		else if (isSunny)
-			nutrients += SUNNY_NUTRIENTS_TRESHOLD;
+			if(nutrients + SUNNY_NUTRIENTS_TRESHOLD >= 0)
+				nutrients += SUNNY_NUTRIENTS_TRESHOLD;
+	}
+	
+	public void addOneToTotalApplesInOctober() {
+		this.totalApplesInOctober ++;
 	}
 
+	public void printTotalNumberOfApplesInOctober() {
+		System.out.println("TOTAL APPLES GROWN DURING OCTOBER: " + this.totalApplesInOctober);
+	}
+	
 	// TODO from here remove when tuple space will be implemented
 
 	public void addNutrients(double nutrients) {
@@ -266,4 +341,23 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	}
 
 	// Until here
+
+	class Pair<F, S> {
+
+		private F first;
+		private S second;
+
+		public Pair(F first, S second) {
+			this.first = first;
+			this.second = second;
+		}
+
+		public F getFirst() {
+			return this.first;
+		}
+
+		public S getSecond() {
+			return this.second;
+		}
+	}
 }
