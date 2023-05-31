@@ -18,6 +18,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 	public static final double BASE_TREE_AGE = 1;
 	public static final int BASE_APPLE_QUANTITY = 10;
 	public static final double BASE_FOLIAGE_DIAMETER = 0.02;
+	public static final double SHADOW_THRESHOLD = 0.9;
 	private int MAX_AGE = 70*365;
 	private final int MIN_AGE_PRODUCE_APPLE = 2*365;
 	
@@ -60,6 +61,25 @@ public class Tree extends DefaultStyle3D<Tree>{
 		
 	}
 	
+	public Tree(Context<Object> context, ContinuousSpace<Object> space, AppleOrchard soil) {
+		this.context = context;
+		this.space = space;
+		this.width = BASE_TREE_WIDHT;
+		this.height = BASE_TREE_HEIGHT;
+		this.age = 0;
+		this.appleList = new ArrayList<>();
+		this.soil = soil;
+		this.diameter = BASE_FOLIAGE_DIAMETER;
+		
+		Parameters p = RunEnvironment.getInstance().getParameters();
+		
+		this.MAX_HEIGHT = (double)p.getValue("treeMaxHeight");
+		this.MAX_WIDTH = (double)p.getValue("treeMaxWidth");
+		this.MAX_FOLIAGE_DIAMETER= (double)p.getValue("treeMaxFoliageDiameter");
+		this.MAX_AGE= (int)p.getValue("treeMaxAge");
+		
+	}
+	
 	
 	private boolean absorbNutrients(double amount) {
 		if (soil.getNutrients()>=amount) {
@@ -70,7 +90,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 		return false;
 	}
 	
-	private double calcNutrientsToGrow() {
+	private double calcNutrientsToGrow(double percentageCovered) {
 		double ageContributions = 0;
 		double ageInYears = age/365;
 		if(ageInYears > 10.0) {//Once the tree is bigger thant 10 years, it will always need the maximum amount which is 0.01
@@ -78,7 +98,8 @@ public class Tree extends DefaultStyle3D<Tree>{
 		} else {
 			ageContributions = (ageInYears)/100;
 		}
-		return 0.1 + (width * 0.002) + (height * 0.002) + (diameter * 0.001) + ageContributions + (appleList.size()*0.002);
+		double basicAmount = 0.1 + (width * 0.002) + (height * 0.002) + (diameter * 0.001) + ageContributions + (appleList.size()*0.002);
+		return (1 - percentageCovered) * basicAmount;
 	}
 	
 	private boolean checkAgeTooOld() {
@@ -89,8 +110,9 @@ public class Tree extends DefaultStyle3D<Tree>{
 		return age <= MIN_AGE_PRODUCE_APPLE;
 	}
 	
-	private double calcNutrientsToSurvive( ) {
-		return (width * 0.002) + (height * 0.002) + (diameter * 0.001);
+	private double calcNutrientsToSurvive(double percentageCovered) {
+		double basicAmount = (width * 0.002) + (height * 0.002) + (diameter * 0.001);
+		return (1 - percentageCovered) * basicAmount;
 	}
 	
 	private void createApples() {
@@ -132,10 +154,15 @@ public class Tree extends DefaultStyle3D<Tree>{
 	public void update() {
 		
 		//Update method is called once per time tick
-		double toGrow = calcNutrientsToGrow();
-		double toSurvive = calcNutrientsToSurvive();
+		double percentageCovered = ShadowsUtility.percentageTreeCovered(this, space);
+		double toGrow = calcNutrientsToGrow(percentageCovered);
+		double toSurvive = calcNutrientsToSurvive(percentageCovered);
 		if(checkAgeTooOld()) {
 			die();
+			return;
+		}
+		if(percentageCovered > SHADOW_THRESHOLD) {
+			notEnoughNutrients();
 			return;
 		}
 		if(getSoilNutrientsQuantity() >= toGrow) {
@@ -168,6 +195,11 @@ public class Tree extends DefaultStyle3D<Tree>{
 		if(height < MAX_HEIGHT) height += 0.01;
 		if(diameter < MAX_FOLIAGE_DIAMETER) diameter += 0.02;
 		NdPoint myLocation = this.space.getLocation(this);
+		this.space.moveTo(this, myLocation.getX(), myLocation.getY() + 0.0001, myLocation.getZ());
+	}
+    
+	public double getIconSize() {
+		return width * 1000;
 		if(height < MAX_HEIGHT) { 
 			this.space.moveTo(this, myLocation.getX(), myLocation.getY() + (0.01/15)*16, myLocation.getZ());
 		}
@@ -194,6 +226,5 @@ public class Tree extends DefaultStyle3D<Tree>{
 			appleList.remove(toRemove);
 		}
 	}
-	
 	
 }
