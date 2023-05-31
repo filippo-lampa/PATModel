@@ -170,7 +170,7 @@ public final class ShadowsUtility {
         // Find the intersection points of the circles
         NdPoint[] intersections = findIntersectionPoints(center2, r2, center3, r3);
         
-        return findWitchPointIsInsideCircle(center1, r1, intersections) != null;
+        return findWhichPointIsInsideCircle(center1, r1, intersections) != null;
     }
 
     private static boolean isPointInsideCircle(NdPoint center1, double radius1, NdPoint point) {
@@ -219,7 +219,8 @@ public final class ShadowsUtility {
     //----------- Math Area Circles ----------------
 	
 	private static double intersectionAreaTwoCircles(ContinuousSpace<Object> space, Tree tree1, Tree tree2) {
-	    double d = space.getDistance(space.getLocation(tree1), space.getLocation(tree2));
+	    //TODO check for ur self, the following variable is not used, wat r u doin? -@HarlockOfficial <3
+		//double d = space.getDistance(space.getLocation(tree1), space.getLocation(tree2));
 	    
 	    NdPoint center1 = space.getLocation(tree1);
 		NdPoint center2 = space.getLocation(tree2);
@@ -247,9 +248,9 @@ public final class ShadowsUtility {
 	    NdPoint[] intersectionPoints23 = findIntersectionPoints(center2, r2, center3, r3);
 	    NdPoint[] intersectionPoints31 = findIntersectionPoints(center3, r3, center1, r1);
 		
-	    NdPoint point1 = findWitchPointIsInsideCircle(center3, r3, intersectionPoints12);
-	    NdPoint point2 = findWitchPointIsInsideCircle(center1, r1, intersectionPoints23);
-	    NdPoint point3 = findWitchPointIsInsideCircle(center2, r2, intersectionPoints31);
+	    NdPoint point1 = findWhichPointIsInsideCircle(center3, r3, intersectionPoints12);
+	    NdPoint point2 = findWhichPointIsInsideCircle(center1, r1, intersectionPoints23);
+	    NdPoint point3 = findWhichPointIsInsideCircle(center2, r2, intersectionPoints31);
 		
 	    if(point1 == null || point2 == null || point3 == null) {
 	    	throw new NullPointerException("This is not supposed to happen");
