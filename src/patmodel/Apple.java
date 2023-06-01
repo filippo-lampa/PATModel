@@ -24,6 +24,8 @@ public class Apple {
 	
 	private AppleOrchard orchard;
 	
+	private TupleSpace tupleSpace;
+	
 	public Apple(Context<Object> context,
 				 ContinuousSpace<Object> space, 
 				 AppleOrchard orchard){
@@ -32,6 +34,8 @@ public class Apple {
 		this.space = space;
 		
 		Parameters p = RunEnvironment.getInstance().getParameters();
+		
+		this.tupleSpace = TupleSpace.getInstance();
 		
 		this.MAX_DIAMETER = (double)p.getValue("appleMaxDiameter");
 		
@@ -67,7 +71,7 @@ public class Apple {
 	}
 	
 	private void becomeNutrients() {
-		this.orchard.addNutrients(AppleOrchard.APPLE_NUTRIENT_AMOUNT);
+		this.tupleSpace.out("nutrients",(double)this.tupleSpace.in("nutrients") + AppleOrchard.APPLE_NUTRIENT_AMOUNT);
 	}
 	
 	private void becomeTree() {
