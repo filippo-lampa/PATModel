@@ -132,9 +132,13 @@ public class Tree extends DefaultStyle3D<Tree>{
 			appleList.add(newApple);
 			this.context.add(newApple);
 			NdPoint thisTreePosition = this.space.getLocation(this);
-			double x = ThreadLocalRandom.current().nextDouble((thisTreePosition.getX() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getX() + this.width / 2) + (this.diameter / 2));
-			double y = ThreadLocalRandom.current().nextDouble((thisTreePosition.getY() + (thisTreePosition.getY() - this.height / 2)) , (thisTreePosition.getY() - this.height / 2) + diameter);
-			double z = ThreadLocalRandom.current().nextDouble((thisTreePosition.getZ() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getZ() + this.width / 2) + (this.diameter / 2));;
+			double x, y, z = Double.MAX_VALUE;
+			do {
+				x = ThreadLocalRandom.current().nextDouble((thisTreePosition.getX() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getX() + this.width / 2) + (this.diameter / 2));
+				y = ThreadLocalRandom.current().nextDouble((thisTreePosition.getY() + (thisTreePosition.getY() - this.height / 2)) , (thisTreePosition.getY() - this.height / 2) + diameter);
+				z = ThreadLocalRandom.current().nextDouble((thisTreePosition.getZ() - this.width / 2) - (this.diameter / 2) , (thisTreePosition.getZ() + this.width / 2) + (this.diameter / 2));;
+			} while(!(x < this.space.getDimensions().getWidth() && y < this.space.getDimensions().getHeight() && z < this.space.getDimensions().getDepth() && x > 0 && y > 0 && z > 0));
+					
 			this.space.moveTo(newApple, x,y,z);
 			double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
 			if((currentTick % AppleOrchard.DAYS_IN_A_YEAR >= 270 && currentTick % AppleOrchard.DAYS_IN_A_YEAR <= AppleOrchard.OCTOBER_ENDS_AT_DAY) || (currentTick >= 270 && currentTick <= AppleOrchard.OCTOBER_ENDS_AT_DAY)) {
