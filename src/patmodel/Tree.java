@@ -3,6 +3,7 @@ package patmodel;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
+import groovyjarjarantlr4.v4.parse.ANTLRParser.finallyClause_return;
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
@@ -19,6 +20,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 	public static final int BASE_APPLE_QUANTITY = 10;
 	public static final double BASE_FOLIAGE_DIAMETER = 0.02;
 	public static final double SHADOW_THRESHOLD = 0.9;
+	private static final double APPLE_SPAWN_RATE = 10;
 	private int MAX_AGE = 70*365;
 	private final int MIN_AGE_PRODUCE_APPLE = 2*365;
 	
@@ -170,7 +172,11 @@ public class Tree extends DefaultStyle3D<Tree>{
 			if(!result) {
 				notEnoughNutrients();
 			}
-			createApples();
+			Random random = new Random();
+			int randomNumber = random.nextInt(APPLE_SPAWN_RATE);
+			if(randomNumber == 0) {
+				createApples();
+			}
 			grow();
 		}
 		else if(getSoilNutrientsQuantity() >= toSurvive){
@@ -195,7 +201,6 @@ public class Tree extends DefaultStyle3D<Tree>{
 		if(height < MAX_HEIGHT) height += 0.01;
 		if(diameter < MAX_FOLIAGE_DIAMETER) diameter += 0.02;
 		NdPoint myLocation = this.space.getLocation(this);
-		this.space.moveTo(this, myLocation.getX(), myLocation.getY() + 0.0001, myLocation.getZ());
 		if(height < MAX_HEIGHT) { 
 			this.space.moveTo(this, myLocation.getX(), myLocation.getY() + (0.01/15)*16, myLocation.getZ());
 		}
