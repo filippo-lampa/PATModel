@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.ListIterator; 
 
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
@@ -19,9 +19,17 @@ public final class ShadowsUtility {
 	
 	public static double percentageTreeCovered(Tree tree, ContinuousSpace<Object> space){
 		
+		//the tree is not big enough to have other trees intersect it
+		if(tree.getWidth() <= 2) return 0.0;
+		
 		List<Tree> neighbours = getNeighboursTreeInRange(tree, space);
+		if(neighbours.isEmpty()) return 0.0;
+		
 		neighbours = filterNeighboursThatIntersect(space, neighbours, tree);
+		if(neighbours.isEmpty()) return 0.0;
+		
 		neighbours = filterTallerNeighbours(neighbours, tree.getHeight());
+		if(neighbours.isEmpty()) return 0.0;
 		
         return percentageCalculation(space, neighbours, tree);
     }
@@ -117,9 +125,14 @@ public final class ShadowsUtility {
 			}	
 		}
 		
-		double areaTreeTotal = (tree.getWidth()*tree.getWidth())*Math.PI;
 		
-		return areaShadow/areaTreeTotal;
+		double areaTreeTotal = Math.pow(tree.getWidth()/2, 2)*Math.PI;
+		
+		double percentage = areaShadow/areaTreeTotal;
+		
+		System.out.println("(areaShadow) " + areaShadow + " / (areaTreeTotal) " + areaTreeTotal + " = (percentage) " + percentage );
+		
+		return percentage;
 		
 	}
 	
@@ -173,9 +186,9 @@ public final class ShadowsUtility {
         return findWhichPointIsInsideCircle(center1, r1, intersections) != null;
     }
 
-    private static boolean isPointInsideCircle(NdPoint center1, double radius1, NdPoint point) {
-        double distance1 = Math.sqrt(Math.pow(point.getX() - center1.getX(), 2) + Math.pow(point.getY() - center1.getY(), 2));
-        return distance1 <= radius1;
+    private static boolean isPointInsideCircle(NdPoint center1, double radius, NdPoint point) {
+        double distance = Math.sqrt(Math.pow(point.getX() - center1.getX(), 2) + Math.pow(point.getY() - center1.getY(), 2));
+        return distance <= radius;
     }
 
     private static NdPoint[] findIntersectionPoints(NdPoint center1, double r1, NdPoint center2, double r2) {
@@ -219,8 +232,6 @@ public final class ShadowsUtility {
     //----------- Math Area Circles ----------------
 	
 	private static double intersectionAreaTwoCircles(ContinuousSpace<Object> space, Tree tree1, Tree tree2) {
-	    //TODO check for ur self, the following variable is not used, wat r u doin? -@HarlockOfficial <3
-		//double d = space.getDistance(space.getLocation(tree1), space.getLocation(tree2));
 	    
 	    NdPoint center1 = space.getLocation(tree1);
 		NdPoint center2 = space.getLocation(tree2);
