@@ -1,6 +1,7 @@
 package patmodel;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 import groovyjarjarantlr4.v4.parse.ANTLRParser.finallyClause_return;
@@ -20,7 +21,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 	public static final int BASE_APPLE_QUANTITY = 10;
 	public static final double BASE_FOLIAGE_DIAMETER = 0.02;
 	public static final double SHADOW_THRESHOLD = 0.9;
-	private static final double APPLE_SPAWN_RATE = 10;
+	private static final int APPLE_SPAWN_RATE = 10;
 	private int MAX_AGE = 70*365;
 	private final int MIN_AGE_PRODUCE_APPLE = 2*365;
 	
