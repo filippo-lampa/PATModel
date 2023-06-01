@@ -1,15 +1,15 @@
 package patmodel;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class TupleSpace {
-
-	private ArrayList<Tuple>space;
 	
 	private static TupleSpace instance = null;
 	
+	private HashMap<String, Object> space;
+	
 	public TupleSpace() {
-		this.space = new ArrayList<>();	
+		this.space = new HashMap<>();	
 	}
 	
 	public static TupleSpace getInstance() {
@@ -19,25 +19,25 @@ public class TupleSpace {
 	}
 	
 	
-	public Tuple in(String name){
-		Tuple chosenEntry = null;
-		for(Tuple currentEntry : this.space)
-			if(currentEntry.getName().equals(name))
-				chosenEntry = currentEntry;
+	public Object in(String name){
+		Object chosenEntry = null;
+		for(String currentEntry : this.space.keySet())
+			if(currentEntry.equals(name))
+				chosenEntry = this.space.get(currentEntry);
 		this.space.remove(chosenEntry);
 		return chosenEntry;
 	}
 	
-	public Tuple rd(String name){
-		Tuple chosenEntry = null;
-		for(Tuple currentEntry : this.space)
-			if(currentEntry.getName().equals(name))
-				chosenEntry = currentEntry;
+	public Object rd(String name){
+		Object chosenEntry = null;
+		for(String currentEntry : this.space.keySet())
+			if(currentEntry.equals(name))
+				chosenEntry = this.space.get(currentEntry);
 		return chosenEntry;
 	}
 	
 	public void out(String name, Object object){
-		this.space.add(new Tuple(name, object));
+		this.space.put(name, object);
 	}
 	
 }

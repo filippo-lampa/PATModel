@@ -18,13 +18,18 @@ public class Apple {
 	private Context<Object> context;
 
 	private AppleOrchard orchard;
-
-	public Apple(Context<Object> context, ContinuousSpace<Object> space, AppleOrchard orchard) {
+	
+	private TupleSpace tupleSpace;
+	
+	public Apple(Context<Object> context,
+				 ContinuousSpace<Object> space, 
+				 AppleOrchard orchard){
 		this.context = context;
 		this.orchard = orchard;
 		this.space = space;
 		Parameters p = RunEnvironment.getInstance().getParameters();
-		this.MAX_DIAMETER = (double) p.getValue("appleMaxDiameter");
+		this.tupleSpace = TupleSpace.getInstance();
+		this.MAX_DIAMETER = (double)p.getValue("appleMaxDiameter");
 	}
 
 	@ScheduledMethod(start = 1, interval = 1, priority = 4)
@@ -55,7 +60,7 @@ public class Apple {
 	}
 
 	private void becomeNutrients() {
-		this.orchard.addNutrients(AppleOrchard.APPLE_NUTRIENT_AMOUNT);
+		this.tupleSpace.out("nutrients",(double)this.tupleSpace.in("nutrients") + AppleOrchard.APPLE_NUTRIENT_AMOUNT);
 	}
 
 	private void becomeTree() {

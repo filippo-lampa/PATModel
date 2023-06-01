@@ -3,15 +3,8 @@ package patmodel;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-
 import repast.simphony.context.Context;
 import repast.simphony.context.DefaultContext;
 import repast.simphony.context.space.continuous.ContinuousSpaceFactory;
@@ -19,9 +12,7 @@ import repast.simphony.context.space.continuous.ContinuousSpaceFactoryFinder;
 import repast.simphony.dataLoader.ContextBuilder;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ISchedule;
-import repast.simphony.engine.schedule.PriorityType;
 import repast.simphony.engine.schedule.ScheduleParameters;
-import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.RandomCartesianAdder;
@@ -30,11 +21,14 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	private double MIN_DISTANCE_BETWEEN_TREES = 3;
 	private static final double RAINING_NUTRIENTS_TRESHOLD = 0.5;
 	private static final double SUNNY_NUTRIENTS_TRESHOLD = -0.1;
-	private static final int DAYS_IN_A_YEAR = 365;
-	private static final int DAYS_IN_A_MONTH = 30;
+	public static final int DAYS_IN_A_YEAR = 365;
+	public static final int DAYS_IN_A_MONTH = 30;
 	private static final double BONUS_AMOUNT = 0.1;
 	private static final double MALUS_AMOUNT = 0.2;
 	public static final double APPLE_NUTRIENT_AMOUNT = 0.5;
+	
+	public static final double OCTOBER_ENDS_AT_DAY = 300;
+	
 	public static final Random RANDOM = new Random();
 	
 	private Context<Object> context;
@@ -42,7 +36,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	ISchedule schedule;
 
-	// private TupleSpace tupleSpace;
+	private TupleSpace tupleSpace;
 
 	private boolean isRaining;
 	private boolean isSunny;
@@ -88,15 +82,15 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		context.add(soil);
 		space.moveTo(soil, 7.5, 0, 7.5);
 
-		// this.tupleSpace = TupleSpace.getInstance();
+		this.tupleSpace = TupleSpace.getInstance();
 
 		this.isRaining = false;
 		this.isWindy = false;
 		this.isSunny = false;
-
-		this.nutrients = 3;
 		
 		this.totalApplesInOctober = 0;
+		
+		this.tupleSpace.out("nutrients", 0.0);
 		
 		// minimal nutrients for a plant to survive at first time tick is equal to 0.1
 		//this.nutrients = 1;
@@ -111,7 +105,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	}
 
 	private void initAgents() {
-		// TODO init soil and get height
 		for (int row = 1; row < this.space.getDimensions().getDepth() / MIN_DISTANCE_BETWEEN_TREES; row++) {
 			for (int column = 1; column < this.space.getDimensions().getWidth()
 					/ MIN_DISTANCE_BETWEEN_TREES; column++) {
@@ -131,6 +124,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void rain(boolean state) {
 		this.isRaining = state;
+		if(state == true)
+			System.out.println("WEATHER: rainy");
 	}
 
 	/**
@@ -138,6 +133,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void wind(boolean state) {
 		this.isWindy = state;
+		if(state == true)
+			System.out.println("WEATHER: windy");
 	}
 
 	/**
@@ -147,6 +144,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void sun(boolean state) {
 		this.isSunny = state;
+		if(state == true)
+			System.out.println("WEATHER: sunny");
 	}
 
 	public void updateSoil() {
@@ -158,7 +157,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void updateWeather() {
 		double currentTick = RunEnvironment.getInstance().getCurrentSchedule().getTickCount();
-		if(currentTick % DAYS_IN_A_YEAR == 300 || currentTick == 300) {
+		if(currentTick % DAYS_IN_A_YEAR == OCTOBER_ENDS_AT_DAY|| currentTick == OCTOBER_ENDS_AT_DAY) {
 			this.printTotalNumberOfApplesInOctober();
 			this.totalApplesInOctober = 0;
 		}
@@ -345,10 +344,10 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	private void deltaNutrients() {
 		if (isRaining)
-			nutrients += RAINING_NUTRIENTS_TRESHOLD;
+			this.tupleSpace.out("nutrients", (double)this.tupleSpace.rd("nutrients") + RAINING_NUTRIENTS_TRESHOLD);
 		else if (isSunny)
 			if(nutrients + SUNNY_NUTRIENTS_TRESHOLD >= 0)
-				nutrients += SUNNY_NUTRIENTS_TRESHOLD;
+				this.tupleSpace.out("nutrients", (double)this.tupleSpace.rd("nutrients") + SUNNY_NUTRIENTS_TRESHOLD);
 	}
 	
 	public void addOneToTotalApplesInOctober() {
@@ -357,16 +356,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 
 	public void printTotalNumberOfApplesInOctober() {
 		System.out.println("TOTAL APPLES GROWN DURING OCTOBER: " + this.totalApplesInOctober);
-	}
-	
-	// TODO from here remove when tuple space will be implemented
-
-	public void addNutrients(double nutrients) {
-		this.nutrients += nutrients;
-	}
-
-	public double getNutrients() {
-		return nutrients;
 	}
 
 }
