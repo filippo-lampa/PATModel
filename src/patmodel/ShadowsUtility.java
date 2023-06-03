@@ -5,10 +5,12 @@ import java.util.stream.Stream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator; 
+import java.util.ListIterator;
 
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
+
+import patmodel.logger.*;
 
 public final class ShadowsUtility {
 
@@ -130,10 +132,9 @@ public final class ShadowsUtility {
 		
 		double percentage = areaShadow/areaTreeTotal;
 		
-		System.out.println("(areaShadow) " + areaShadow + " / (areaTreeTotal) " + areaTreeTotal + " = (percentage) " + percentage );
+		Logger.getLogger().Debug("(areaShadow) " + areaShadow + " / (areaTreeTotal) " + areaTreeTotal + " = (percentage) " + percentage, true, ShadowsUtility.class.getName());
 		
 		return percentage;
-		
 	}
 	
 	private static List<LinkedList<Tree>> mergeLists(List<LinkedList<Tree>> lists) {

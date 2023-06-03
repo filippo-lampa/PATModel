@@ -17,6 +17,8 @@ import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.RandomCartesianAdder;
 
+import patmodel.logger.*;
+
 public class AppleOrchard extends DefaultContext<Object> implements ContextBuilder<Object> {
 	private double MIN_DISTANCE_BETWEEN_TREES = 3;
 	private static final double RAINING_NUTRIENTS_TRESHOLD = 0.5;
@@ -125,7 +127,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	public void rain(boolean state) {
 		this.isRaining = state;
 		if(state == true)
-			System.out.println("WEATHER: rainy");
+			Logger.getLogger().Debug("WEATHER: rainy", true, this.getClass().getName());
 	}
 
 	/**
@@ -134,7 +136,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	public void wind(boolean state) {
 		this.isWindy = state;
 		if(state == true)
-			System.out.println("WEATHER: windy");
+			Logger.getLogger().Debug("WEATHER: windy", true, this.getClass().getName());
 	}
 
 	/**
@@ -145,7 +147,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	public void sun(boolean state) {
 		this.isSunny = state;
 		if(state == true)
-			System.out.println("WEATHER: sunny");
+			Logger.getLogger().Debug("WEATHER: sunny", true, this.getClass().getName());
 	}
 
 	public void updateSoil() {
@@ -348,6 +350,7 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 		else if (isSunny)
 			if(nutrients + SUNNY_NUTRIENTS_TRESHOLD >= 0)
 				this.tupleSpace.out("nutrients", (double)this.tupleSpace.rd("nutrients") + SUNNY_NUTRIENTS_TRESHOLD);
+		// Perhaps if the weather is windy we should push something to the tuple space, so that trees and apples can check for the wind conditions and in case die or fall
 	}
 	
 	public void addOneToTotalApplesInOctober() {
@@ -355,7 +358,6 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	}
 
 	public void printTotalNumberOfApplesInOctober() {
-		System.out.println("TOTAL APPLES GROWN DURING OCTOBER: " + this.totalApplesInOctober);
+		Logger.getLogger().Info("Total Apples Grown in October: " + this.totalApplesInOctober, true, this.getClass().getName());
 	}
-
 }

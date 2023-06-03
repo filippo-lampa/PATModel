@@ -1,10 +1,8 @@
 package patmodel;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-import groovyjarjarantlr4.v4.parse.ANTLRParser.finallyClause_return;
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;

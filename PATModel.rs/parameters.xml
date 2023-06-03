@@ -5,6 +5,12 @@
 						isReadOnly="false" 
 						converter="repast.simphony.parameter.StringConverterFactory$IntConverter"
 											/>
+				<parameter name="minLogSeverity" displayName="Min Log Severity Level" type="patmodel.logger.LogLevel" 
+						defaultValue="DEBUG" 
+						isReadOnly="false" 
+						converter="patmodel.logger.LogLevelConverter"
+												values="DEBUG INFO WARN ERROR "
+											/>
 				<parameter name="treeMaxHeight" displayName="Tree Max Height" type="double" 
 						defaultValue="3.0" 
 						isReadOnly="false" 
