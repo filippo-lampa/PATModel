@@ -48,7 +48,7 @@ public class Apple {
 	}
 
 	private void becomeTreeOrNutrients() {
-		if (AppleOrchard.RANDOM.nextInt() < .5)
+		if (AppleOrchard.RANDOM.nextDouble() < .5)
 			this.becomeNutrients();
 		else
 			this.becomeTree();
