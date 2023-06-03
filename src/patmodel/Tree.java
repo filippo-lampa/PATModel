@@ -3,6 +3,9 @@ package patmodel;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.tools.ant.types.CommandlineJava.SysProperties;
+
+import groovyjarjarantlr4.v4.parse.ANTLRParser.finallyClause_return;
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
@@ -105,8 +108,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 			ageContributions = (ageInYears)/100;
 		}
 		double basicAmount = 0.1 + (width * 0.002) + (height * 0.002) + (diameter * 0.001) + ageContributions + (appleList.size()*0.002);
-		//return (1 - percentageCovered) * basicAmount;
-		return basicAmount;
+		return (1 - percentageCovered) * basicAmount;
 	}
 	
 	private boolean checkAgeTooOld() {
@@ -119,8 +121,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 	
 	private double calcNutrientsToSurvive(double percentageCovered) {
 		double basicAmount = (width * 0.002) + (height * 0.002) + (diameter * 0.001);
-		//return (1 - percentageCovered) * basicAmount;
-		return basicAmount;
+		return (1 - percentageCovered) * basicAmount;
 	}
 	
 	private void createApples() {
