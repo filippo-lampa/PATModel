@@ -21,9 +21,6 @@ public final class ShadowsUtility {
 	
 	public static double percentageTreeCovered(Tree tree, ContinuousSpace<Object> space){
 		
-		//the tree is not big enough to have other trees intersect it
-		if(tree.getDiameter() <= 2) return 0.0;
-		
 		List<Tree> neighbours = getNeighboursTreeInRange(tree, space);
 		if(neighbours.isEmpty()) return 0.0;
 		
