@@ -6,6 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.tools.ant.types.CommandlineJava.SysProperties;
 
 import groovyjarjarantlr4.v4.parse.ANTLRParser.finallyClause_return;
+import patmodel.logger.Logger;
 import repast.simphony.context.Context;
 import repast.simphony.engine.environment.RunEnvironment;
 import repast.simphony.engine.schedule.ScheduledMethod;
@@ -21,7 +22,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 	public static final double BASE_TREE_AGE = 1;
 	public static final int BASE_APPLE_QUANTITY = 10;
 	public static final double BASE_FOLIAGE_DIAMETER = 0.02;
-	public static final double SHADOW_THRESHOLD = 0.9;
+	public static final double SHADOW_THRESHOLD = 0.7;
 	//Note: the actual rate is 1/APPLE_SPAWN_RATE, in fact a random double number is generated and the apple is spawn only if the value is lower then 1
 	private static final double APPLE_SPAWN_RATE = 10;
 	private int MAX_AGE = 70*365;
@@ -166,7 +167,10 @@ public class Tree extends DefaultStyle3D<Tree>{
 	@ScheduledMethod(start = 1, interval = 1, priority = 3)
 	public void update() {
 		//Update method is called once per time tick
-		double percentageCovered = ShadowsUtility.percentageTreeCovered(this, space);
+		double percentageCovered = ShadowsUtility.percentageTreeCovered(this, space);	
+		
+		Logger.getLogger().Debug("PERCENTAGE OF TREE COVERED BY SHADOW: " + percentageCovered, true, this.getClass().getName());
+
 		double toGrow = calcNutrientsToGrow(percentageCovered);
 		double toSurvive = calcNutrientsToSurvive(percentageCovered);
 		if(checkAgeTooOld()) {

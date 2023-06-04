@@ -22,6 +22,7 @@ public final class ShadowsUtility {
 	public static double percentageTreeCovered(Tree tree, ContinuousSpace<Object> space){
 		
 		List<Tree> neighbours = getNeighboursTreeInRange(tree, space);
+		
 		if(neighbours.isEmpty()) return 0.0;
 		
 		neighbours = filterNeighboursThatIntersect(space, neighbours, tree);
@@ -39,11 +40,22 @@ public final class ShadowsUtility {
 	private static List<Tree> getNeighboursTreeInRange(Tree tree, ContinuousSpace<Object> space) {
 		double maxRange = 4.0; //this depend on the max radius possible * 2
 		
-		return Stream.of(space.getObjects())
-				.filter(o -> o.getClass().equals(tree.getClass()) 
-						&& space.getDistance(space.getLocation(o), space.getLocation(tree)) < maxRange)
-				.map(o -> (Tree) o)
-				.toList();
+		List<Tree> neigs = new ArrayList<Tree>();
+
+		
+		for(Object o : space.getObjects())
+			if(o instanceof Tree && space.getDistance(space.getLocation(o), space.getLocation(tree)) < maxRange)
+					neigs.add((Tree)o);
+		
+		Tree thisTreeToRemove = null;
+		
+		for(Tree t : neigs)
+			if(space.getLocation(t).equals(space.getLocation(tree)))
+				thisTreeToRemove = t;
+				
+		neigs.remove(thisTreeToRemove);
+		
+		return neigs;
 	}
 	
 	
