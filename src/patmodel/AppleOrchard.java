@@ -126,8 +126,9 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void rain(boolean state) {
 		this.isRaining = state;
-		if(state == true)
+		if(state == true) {
 			Logger.getLogger().Debug("WEATHER: rainy", true, this.getClass().getName());
+		}
 	}
 
 	/**
@@ -135,8 +136,10 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void wind(boolean state) {
 		this.isWindy = state;
-		if(state == true)
+		if(state == true) {
+			this.tupleSpace.out("wind", true);
 			Logger.getLogger().Debug("WEATHER: windy", true, this.getClass().getName());
+		}
 	}
 
 	/**
@@ -146,8 +149,9 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	 */
 	public void sun(boolean state) {
 		this.isSunny = state;
-		if(state == true)
+		if(state == true) {
 			Logger.getLogger().Debug("WEATHER: sunny", true, this.getClass().getName());
+		}
 	}
 
 	public void updateSoil() {
@@ -163,6 +167,8 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 			this.printTotalNumberOfApplesInOctober();
 			this.totalApplesInOctober = 0;
 		}
+		//reset wind
+		this.tupleSpace.out("wind", false);
 		this.computeWeather(currentTick);
 	}
 
