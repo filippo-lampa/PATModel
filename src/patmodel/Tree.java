@@ -227,6 +227,11 @@ public class Tree extends DefaultStyle3D<Tree>{
 		return height;
 	}
 	
+	public double getDiameter() {
+		return diameter;
+	}
+	
+	
 	public void releaseApples(int nApples) {
 		for(int i = 0; i < nApples; i++) {//release a random apple
 			int index = AppleOrchard.RANDOM.nextInt(appleList.size());

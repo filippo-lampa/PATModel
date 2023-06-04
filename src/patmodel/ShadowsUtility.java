@@ -22,7 +22,7 @@ public final class ShadowsUtility {
 	public static double percentageTreeCovered(Tree tree, ContinuousSpace<Object> space){
 		
 		//the tree is not big enough to have other trees intersect it
-		if(tree.getWidth() <= 2) return 0.0;
+		if(tree.getDiameter() <= 2) return 0.0;
 		
 		List<Tree> neighbours = getNeighboursTreeInRange(tree, space);
 		if(neighbours.isEmpty()) return 0.0;
@@ -55,7 +55,7 @@ public final class ShadowsUtility {
 		List<Tree> intersect = new ArrayList<Tree>();
 		
 		for(Tree t : neighbours) {
-			if(space.getDistance(space.getLocation(t), space.getLocation(tree)) < tree.getWidth()/2 + t.getWidth()/2) {
+			if(space.getDistance(space.getLocation(t), space.getLocation(tree)) < tree.getDiameter()/2 + t.getDiameter()/2) {
 				intersect.add(t);
 			}
 		}
@@ -89,8 +89,8 @@ public final class ShadowsUtility {
 			app.remove(t);
 			i = 0;
 			for(Tree t2 : app) {
-				if(space.getDistance(space.getLocation(t), space.getLocation(t2)) < t.getWidth()/2 + t2.getWidth()/2
-						&& hasCommonArea(space.getLocation(tree), tree.getWidth(), space.getLocation(t), t.getWidth(), space.getLocation(t2), t2.getWidth())) {
+				if(space.getDistance(space.getLocation(t), space.getLocation(t2)) < t.getDiameter()/2 + t2.getDiameter()/2
+						&& hasCommonArea(space.getLocation(tree), tree.getDiameter(), space.getLocation(t), t.getDiameter(), space.getLocation(t2), t2.getDiameter())) {
 					LinkedList<Tree> couple = new LinkedList<Tree>();
 					couple.add(t);
 					couple.add(t2);
@@ -128,7 +128,7 @@ public final class ShadowsUtility {
 		}
 		
 		
-		double areaTreeTotal = Math.pow(tree.getWidth()/2, 2)*Math.PI;
+		double areaTreeTotal = Math.pow(tree.getDiameter()/2, 2)*Math.PI;
 		
 		double percentage = areaShadow/areaTreeTotal;
 		
@@ -236,8 +236,8 @@ public final class ShadowsUtility {
 	    
 	    NdPoint center1 = space.getLocation(tree1);
 		NdPoint center2 = space.getLocation(tree2);
-		double r1 = tree1.getWidth()/2;
-	    double r2 = tree2.getWidth()/2;
+		double r1 = tree1.getDiameter()/2;
+	    double r2 = tree2.getDiameter()/2;
 	    NdPoint[] intersectionPoints = findIntersectionPoints(center1, r1, center2, r2);
 	    
 	    double circularSegmentArea1 = circularSegmentArea(center1, intersectionPoints[0], intersectionPoints[1], r1);
@@ -252,9 +252,9 @@ public final class ShadowsUtility {
 		NdPoint center1 = space.getLocation(tree1);
 		NdPoint center2 = space.getLocation(tree2);
 		NdPoint center3 = space.getLocation(tree3);
-		double r1 = tree1.getWidth()/2;
-	    double r2 = tree2.getWidth()/2;
-	    double r3 = tree3.getWidth()/2;
+		double r1 = tree1.getDiameter()/2;
+	    double r2 = tree2.getDiameter()/2;
+	    double r3 = tree3.getDiameter()/2;
 		
 	    NdPoint[] intersectionPoints12 = findIntersectionPoints(center1, r1, center2, r2);
 	    NdPoint[] intersectionPoints23 = findIntersectionPoints(center2, r2, center3, r3);
