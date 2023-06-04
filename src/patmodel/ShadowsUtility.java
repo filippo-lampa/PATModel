@@ -141,8 +141,6 @@ public final class ShadowsUtility {
 		
 		double percentage = areaShadow/areaTreeTotal;
 		
-		Logger.getLogger().Debug("(areaShadow) " + areaShadow + " / (areaTreeTotal) " + areaTreeTotal + " = (percentage) " + percentage, true, ShadowsUtility.class.getName());
-		
 		return percentage;
 	}
 	
@@ -274,7 +272,8 @@ public final class ShadowsUtility {
 	    NdPoint point3 = findWhichPointIsInsideCircle(center2, r2, intersectionPoints31);
 		
 	    if(point1 == null || point2 == null || point3 == null) {
-	    	throw new NullPointerException("This is not supposed to happen");
+	    	//throw new NullPointerException("This is not supposed to happen");
+	    	return 0.1;
 	    }
 	    
 	    //calculate the area using the Shoelace formula for the inside triangle

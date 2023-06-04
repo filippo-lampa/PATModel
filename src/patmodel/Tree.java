@@ -169,7 +169,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 		//Update method is called once per time tick
 		double percentageCovered = ShadowsUtility.percentageTreeCovered(this, space);	
 		
-		Logger.getLogger().Debug("PERCENTAGE OF TREE COVERED BY SHADOW: " + percentageCovered, true, this.getClass().getName());
+		//Logger.getLogger().Debug("PERCENTAGE OF TREE COVERED BY SHADOW: " + percentageCovered, true, this.getClass().getName());
 
 		double toGrow = calcNutrientsToGrow(percentageCovered);
 		double toSurvive = calcNutrientsToSurvive(percentageCovered);
@@ -187,7 +187,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 				notEnoughNutrients();
 			}
 			double randomNumber = AppleOrchard.RANDOM.nextDouble(APPLE_SPAWN_RATE);
-			if(randomNumber < 1) {
+			if(randomNumber < 9) {
 				createApples();
 			}
 			grow();
@@ -241,7 +241,6 @@ public class Tree extends DefaultStyle3D<Tree>{
 			int index = AppleOrchard.RANDOM.nextInt(appleList.size());
 			Apple toRemove = appleList.get(index);
 			toRemove.fall();
-			this.context.remove(toRemove);
 			appleList.remove(toRemove);
 		}
 	}

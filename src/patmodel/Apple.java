@@ -5,9 +5,10 @@ import repast.simphony.engine.schedule.ScheduledMethod;
 import repast.simphony.parameter.Parameters;
 import repast.simphony.space.continuous.ContinuousSpace;
 import repast.simphony.space.continuous.NdPoint;
+import repast.simphony.visualization.visualization3D.style.DefaultStyle3D;
 import repast.simphony.context.Context;
 
-public class Apple {
+public class Apple{
 
 	private double diameter;
 
@@ -49,11 +50,11 @@ public class Apple {
 	}
 
 	public double getIconSize() {
-		return diameter;
+		return diameter * 0.005;
 	}
 
 	private void becomeTreeOrNutrients() {
-		if (AppleOrchard.RANDOM.nextDouble() < .5)
+		if (AppleOrchard.RANDOM.nextDouble() < .7)
 			this.becomeNutrients();
 		else
 			this.becomeTree();
@@ -68,8 +69,14 @@ public class Apple {
 				Tree.BASE_TREE_AGE, Tree.BASE_FOLIAGE_DIAMETER);
 		this.context.add(t);
 		var pointToMoveTo = this.casualNearPoint(2);
-		this.space.moveTo(t, pointToMoveTo.getX(), 0, pointToMoveTo.getZ());
-
+		boolean flag = true;
+		for(Object o : space.getObjects()) {
+			if(o instanceof Tree && space.getDistance(space.getLocation(o), pointToMoveTo) < 3)
+				flag = false;
+		}
+		if(flag)
+			this.space.moveTo(t, pointToMoveTo.getX(), 0, pointToMoveTo.getZ());
+		else this.context.remove(t);
 	}
 
 	/**
