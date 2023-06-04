@@ -362,7 +362,11 @@ public class AppleOrchard extends DefaultContext<Object> implements ContextBuild
 	public void addOneToTotalApplesInOctober() {
 		this.totalApplesInOctober ++;
 	}
-
+	
+	public double getTotalNumberOfApplesInOctober() {
+		return this.totalApplesInOctober;
+	}
+	
 	public void printTotalNumberOfApplesInOctober() {
 		Logger.getLogger().Info("Total Apples Grown in October: " + this.totalApplesInOctober, true, this.getClass().getName());
 	}

@@ -102,4 +102,7 @@ public class Apple{
 		return value;
 	}
 
+	public int plotting() {
+		return 1;
+	}
 }

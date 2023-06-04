@@ -153,6 +153,7 @@ public class Tree extends DefaultStyle3D<Tree>{
 		context.remove(this);
 	}
 	
+	
 	private void notEnoughNutrients() {
 		if(appleList.size() > 0) {
 			releaseApples(1);
